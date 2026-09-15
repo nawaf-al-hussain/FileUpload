@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SyllabAI Knowledge Graph - Edexcel International GCSE Chemistry</title>
+<style>
+:root{--paper:#f7f4ec;--paper2:#fbfaf6;--ink:#273239;--muted:#7a817f;--line:#666f73;--border:#d6d0c4;--blue:#3d79a6;--teal:#2a8b8a;--green:#4a9b70;--purple:#6656a9;--orange:#c38422;--pink:#c85b78;--red:#b85a52;--soft:#ece8de;--panel:rgba(251,250,246,.97)}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+#app{position:relative;width:100%;height:100%;background:radial-gradient(circle at 46% 40%,rgba(255,255,255,.72),transparent 42%),var(--paper)}
+#graph{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}.grabbing{cursor:grabbing}
+.edge{fill:none;vector-effect:non-scaling-stroke}.hier{stroke:#566066;stroke-width:1;opacity:.28}.pre{stroke:#4b6f88;stroke-width:1.35;opacity:.62}.rel{stroke:#7d8587;stroke-width:1;stroke-dasharray:4 6;opacity:.28}.assess{stroke:#b77b21;stroke-width:1.2;opacity:.52}.stateEdge{stroke:#c85b78;stroke-width:1;stroke-dasharray:2 5;opacity:.48}.edge.active{stroke:#263239;stroke-width:2;opacity:.95}.edge.dim{opacity:.055}.edge.emerging{stroke-dasharray:1 9;opacity:.52;animation:none;transition:none} .topicIcon{fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:1!important;visibility:visible!important}.topicIconFill{fill:currentColor;stroke:none}
+.node{cursor:pointer} .specCard{fill:var(--paper2);stroke:var(--border);stroke-width:1.2;vector-effect:non-scaling-stroke;pointer-events:none;filter:drop-shadow(0 3px 5px rgba(40,40,30,.08))}.specCardTitle{font-size:8px;font-weight:700;fill:#39454a;pointer-events:none;letter-spacing:.05px}.specCardText{font-size:8px;fill:#5c666a;pointer-events:none}.specMorphText{dominant-baseline:alphabetic}.node.dim{opacity:.11}.node text{fill:#343d42;pointer-events:none;paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}.label{font-size:11px}.kind{font-size:8px;fill:#7d8587}.node.selected .body{stroke-width:3.2}.node.hovered .body{stroke-width:3}.body{fill:var(--paper2);stroke-width:2;vector-effect:non-scaling-stroke}.halo{fill:none;stroke-width:1.2;opacity:.10;vector-effect:non-scaling-stroke}.stateRing{fill:none;stroke-width:3;vector-effect:non-scaling-stroke;opacity:.84}.review{fill:var(--pink)}.cBadge{font-size:8px;fill:#fff;font-weight:bold;pointer-events:none}.pulse{fill:none;stroke:var(--pink);stroke-width:1.2;opacity:.28;vector-effect:non-scaling-stroke;animation:pulse 2.6s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:.08;transform:scale(1)}50%{opacity:.42;transform:scale(1.09)}}
+#hud{position:absolute;left:19px;top:15px;z-index:10;pointer-events:none}.title{font-size:16px;font-weight:700}.subtitle{font-size:9px;color:var(--muted);margin-top:5px}.scope{font-size:9px;color:#666f73;margin-top:8px}.source{font-size:8px;color:#8b8f8c;margin-top:4px;max-width:430px;line-height:1.35}
+#searchWrap{position:absolute;left:50%;top:13px;transform:translateX(-50%);width:min(470px,45vw);z-index:20}.search{width:100%;height:34px;border:1px solid var(--border);background:rgba(255,255,252,.93);padding:0 12px;font:inherit;font-size:10px;outline:none}.search:focus{box-shadow:0 0 0 2px rgba(60,70,70,.05)}
+#lensBar{position:absolute;right:15px;top:13px;display:flex;gap:5px;z-index:20}.lens,#modeBar button,.ctrl,.action{font:inherit;cursor:pointer;background:rgba(252,251,247,.91);border:1px solid var(--border);color:#586268}.lens{font-size:10px;padding:7px 10px}.lens.active{background:#fff;color:#202a30;font-weight:700}
+#modeBar{position:absolute;right:15px;top:56px;display:flex;gap:5px;z-index:20}#modeBar button{font-size:8px;padding:6px 8px}.activeMode{background:#fff!important;color:#202a30!important;font-weight:700}
+#controls{position:absolute;left:14px;bottom:53px;display:flex;flex-direction:column;gap:5px;z-index:20}.ctrl{width:33px;height:33px;font-size:14px}.ctrl:hover,.lens:hover,#modeBar button:hover{background:#fff}
+#legend{position:absolute;left:57px;bottom:52px;z-index:12;font-size:8px;line-height:1.45;color:#687174;background:rgba(251,250,246,.78);border:1px solid #e0dcd2;padding:7px 9px;max-width:540px}.legendSwatch{display:inline-block;width:17px;border-top:2px solid #5b656a;margin:0 5px 2px 8px}.dash{border-top-style:dashed}
+#status{position:absolute;left:50%;bottom:48px;transform:translateX(-50%);z-index:12;background:rgba(251,250,246,.72);padding:5px 8px;color:#7b8284;font-size:8px;white-space:nowrap;pointer-events:none}
+#panel{position:absolute;right:15px;top:96px;width:380px;max-height:calc(100% - 145px);overflow:auto;display:none;z-index:30;background:var(--panel);border:1px solid var(--border);box-shadow:0 18px 40px rgba(0,0,0,.08);padding:16px}#panel.show{display:block}#close{position:absolute;right:7px;top:5px;border:0;background:none;font-size:18px;color:#6e777b;cursor:pointer}#p-title{font-size:18px;font-weight:700;padding-right:24px;line-height:1.15}.type{font-size:8px;color:#788083;margin:5px 0 13px}.row{display:flex;justify-content:space-between;gap:10px;font-size:9px;margin:8px 0}.bar{height:6px;background:#e6e1d7;margin:5px 0 12px}.bar span{display:block;height:100%;background:var(--purple)}.section{margin:15px 0 7px;font-size:8px;text-transform:uppercase;letter-spacing:.3px;color:#7b8386}.meta,.list{font-size:9px;line-height:1.6}.chip{display:inline-block;border:1px solid #d5d0c5;background:#fff;padding:3px 5px;margin:2px 4px 2px 0;font-size:8px}.quote{border-left:2px solid #9a958a;padding-left:9px;color:#4e585d}.actions{display:flex;gap:6px;margin-top:14px}.action{font-size:8px;padding:7px 9px;background:#fff}.action:hover{background:#f1eee6}
+#bottom{position:absolute;left:0;right:0;bottom:0;height:36px;background:rgba(249,248,243,.97);border-top:1px solid #d8d5cd;z-index:20;display:flex;align-items:center;gap:20px;padding:0 12px;font-size:9px;color:#5d676d}.bottomItem{display:flex;gap:6px;align-items:center}.dot{width:12px;height:12px;border:1px solid #727b7f;border-radius:50%}.square{border-radius:3px}.smalltext{margin-left:auto;color:#7d8384;font-size:8px}
+</style>
+</head>
+<body>
+<div id="app">
+<svg id="graph" viewBox="0 0 1500 860" aria-label="SyllabAI knowledge graph for Pearson Edexcel International GCSE Chemistry" role="img"></svg>
+<div id="hud"><div class="title">SyllabAI Knowledge Universe</div><div class="subtitle">OpenHuman spatial interaction study · real curriculum data</div><div class="scope">Pearson Edexcel International GCSE · Chemistry</div><div class="source">Source: Pearson Edexcel International GCSE in Chemistry, Specification - Issue 3 - September 2024.</div></div>
+<div id="searchWrap"><input id="search" class="search" placeholder="Search specification points, topics, papers..." autocomplete="off"></div>
+<div id="lensBar"><button class="lens active" data-lens="student">Student</button><button class="lens" data-lens="teacher">Teacher</button></div>
+<div id="modeBar"><button class="activeMode" data-mode="overview">Overview</button><button data-mode="knowledge">Knowledge</button><button data-mode="assessment">Assessment</button><button data-mode="progress">My state</button></div>
+<div id="controls"><button class="ctrl" id="zin">+</button><button class="ctrl" id="zout">−</button><button class="ctrl" id="reset">⌖</button><button class="ctrl" id="focus">◎</button></div>
+<div id="legend"><b>Visual grammar</b><span class="legendSwatch"></span>hierarchy <span class="legendSwatch dash"></span>semantic/assessment · ring = learner/teacher overlay · C = higher-depth content · click = focus · double-click = expand · Ctrl+click / hold parent = expand · Ctrl+click / hold spec = morph detail</div>
+<div id="status">drag background to pan · wheel to zoom · drag nodes to reposition · click to inspect/focus · double-click or Ctrl+click/hold parent to expand · Esc clears</div>
+<div id="panel"><button id="close">×</button><div id="p-title"></div><div id="p-type" class="type"></div><div class="row"><span id="m1">Learner state</span><strong id="primary">-</strong></div><div class="bar"><span id="barFill"></span></div><div class="row"><span id="m2">Review</span><strong id="secondary">-</strong></div><div class="row"><span>Source</span><strong id="sourceTag">Pearson Edexcel</strong></div><div class="section">Official curriculum</div><div id="context" class="meta"></div><div class="section">Specification statement</div><div id="statement" class="quote meta"></div><div class="section">Graph relationships</div><div id="links" class="list"></div><div class="section">Learner / class overlay</div><div id="evidence" class="list"></div><div class="section">Assessment</div><div id="assessment" class="list"></div><div class="actions"><button class="action" id="learnBtn">Open learning surface</button><button class="action" id="practiceBtn">Practice</button><button class="action" id="tutorBtn">Tutor</button></div></div>
+<div id="bottom"><div class="bottomItem"><span class="dot"></span>Academic</div><div class="bottomItem"><span class="dot square"></span>Knowledge</div><div class="bottomItem"><span class="dot"></span>Assessment</div><div class="bottomItem"><span class="dot square"></span>Learner state</div><div class="smalltext">real specification nodes · demo learner overlays · no private student data</div></div>
+</div>
+<script>
+// v24: calmer 1200ms in-place SpecificationPoint morph; expanded box stroke follows node color.
+const NS='http://www.w3.org/2000/svg',svg=document.getElementById('graph'),W=1500,H=860;
+const measureCanvas=document.createElement('canvas'),measureCtx=measureCanvas.getContext('2d');
+measureCtx.font='8px Arial';
+const sections={1:{label:'Principles of chemistry',color:'#6656a9'},2:{label:'Inorganic chemistry',color:'#2a8b8a'},3:{label:'Physical chemistry',color:'#3d79a6'},4:{label:'Organic chemistry',color:'#4a9b70'}};
+const subtopics={"1": [["1a", "States of matter", 1.1, 1.7], ["1b", "Elements, compounds and mixtures", 1.8, 1.13], ["1c", "Atomic structure", 1.14, 1.17], ["1d", "The Periodic Table", 1.18, 1.24], ["1e", "Chemical formulae, equations and calculations", 1.25, 1.36], ["1f", "Ionic bonding", 1.37, 1.43], ["1g", "Covalent bonding", 1.44, 1.51], ["1h", "Metallic bonding", 1.52, 1.54], ["1i", "Electrolysis", 1.55, 1.6]], "2": [["2a", "Group 1 (alkali metals) - lithium, sodium and potassium", 2.1, 2.4], ["2b", "Group 7 (halogens) - chlorine, bromine and iodine", 2.5, 2.8], ["2c", "Gases in the atmosphere", 2.9, 2.14], ["2d", "Reactivity series", 2.15, 2.21], ["2e", "Extraction and uses of metals", 2.22, 2.27], ["2f", "Acids, alkalis and titrations", 2.28, 2.33], ["2g", "Acids, bases and salt preparations", 2.34, 2.43], ["2h", "Chemical tests", 2.44, 2.5]], "3": [["3a", "Energetics", 3.1, 3.8], ["3b", "Rates of reaction", 3.9, 3.16], ["3c", "Reversible reactions and equilibria", 3.17, 3.22]], "4": [["4a", "Introduction", 4.1, 4.6], ["4b", "Crude oil", 4.7, 4.18], ["4c", "Alkanes", 4.19, 4.22], ["4d", "Alkenes", 4.23, 4.28], ["4e", "Alcohols", 4.29, 4.33], ["4f", "Carboxylic acids", 4.34, 4.37], ["4g", "Esters", 4.38, 4.43], ["4h", "Synthetic polymers", 4.44, 4.5]]};
+const points=[{"id": "1.1", "text": "understand the three states of matter in terms of the arrangement, movement and energy of the particles"}, {"id": "1.2", "text": "understand the interconversions between the three states of matter in terms of: • the names of the interconversions • how they are achieved • the changes in arrangement, movement and energy of the particles."}, {"id": "1.3", "text": "understand how the results of experiments involving the dilution of coloured solutions and diffusion of gases can be explained"}, {"id": "1.4", "text": "know what is meant by the terms: • solvent • solute • solution • saturated solution."}, {"id": "1.5C", "text": "know what is meant by the term solubility in the units g per 100 g of solvent"}, {"id": "1.6C", "text": "understand how to plot and interpret solubility curves"}, {"id": "1.7C", "text": "practical: investigate the solubility of a solid in water at a specific temperature"}, {"id": "1.8", "text": "understand how to classify a substance as an element, compound or mixture"}, {"id": "1.9", "text": "understand that a pure substance has a fixed melting and boiling point, but that a mixture may melt or boil over a range of temperatures"}, {"id": "1.10", "text": "describe these experimental techniques for the separation of mixtures: • simple distillation • fractional distillation • filtration • crystallisation • paper chromatography."}, {"id": "1.11", "text": "understand how a chromatogram provides information about the composition of a mixture"}, {"id": "1.12", "text": "understand how to use the calculation of Rf values to identify the components of a mixture"}, {"id": "1.13", "text": "practical: investigate paper chromatography using inks/food colourings"}, {"id": "1.14", "text": "know what is meant by the terms atom and molecule"}, {"id": "1.15", "text": "know the structure of an atom in terms of the positions, relative masses and relative charges of sub-atomic particles"}, {"id": "1.16", "text": "know what is meant by the terms atomic number, mass number, isotopes and relative atomic mass (Ar)"}, {"id": "1.17", "text": "be able to calculate the relative atomic mass of an element (Ar) from isotopic abundances"}, {"id": "1.18", "text": "understand how elements are arranged in the Periodic Table: • in order of atomic number • in groups and periods."}, {"id": "1.19", "text": "understand how to deduce the electronic configurations of the first 20 elements from their positions in the Periodic Table"}, {"id": "1.20", "text": "understand how to use electrical conductivity and the acid-base character of oxides to classify elements as metals or non-metals"}, {"id": "1.21", "text": "identify an element as a metal or a non-metal according to its position in the Periodic Table"}, {"id": "1.22", "text": "understand how the electronic configuration of a main group element is related to its position in the Periodic Table"}, {"id": "1.23", "text": "understand why elements in the same group of the Periodic Table have similar chemical properties"}, {"id": "1.24", "text": "understand why the noble gases (Group 0) do not readily react"}, {"id": "1.25", "text": "write word equations and balanced chemical equations (including state symbols): • for reactions studied in this specification • for unfamiliar reactions where suitable information is provided."}, {"id": "1.26", "text": "calculate relative formula masses (including relative molecular masses) (Mr) from relative atomic masses (Ar)"}, {"id": "1.27", "text": "know that the mole (mol) is the unit for the amount of a substance"}, {"id": "1.28", "text": "understand how to carry out calculations involving amount of substance, relative atomic mass (Ar) and relative formula mass (Mr)"}, {"id": "1.29", "text": "calculate reacting masses using experimental data and chemical equations"}, {"id": "1.30", "text": "calculate percentage yield"}, {"id": "1.31", "text": "understand how the formulae of simple compounds can be obtained experimentally, including metal oxides, water and salts containing water of crystallisation"}, {"id": "1.32", "text": "know what is meant by the terms empirical formula and molecular formula"}, {"id": "1.33", "text": "calculate empirical and molecular formulae from experimental data"}, {"id": "1.34C", "text": "understand how to carry out calculations involving amount of substance, volume and concentration (in mol/dm3) of solution"}, {"id": "1.35C", "text": "understand how to carry out calculations involving gas volumes and the molar volume of a gas (24 dm3 and 24 000 cm3 at room temperature and pressure (rtp))"}, {"id": "1.36", "text": "practical: know how to determine the formula of a metal oxide by combustion (e.g. magnesium oxide) or by reduction (e.g. copper(II) oxide)"}, {"id": "1.37", "text": "understand how ions are formed by electron loss or gain"}, {"id": "1.38", "text": "know the charges of these ions: • metals in Groups 1, 2 and 3 • non-metals in Groups 5, 6 and 7 • Ag+, Cu2+, Fe2+, Fe3+, Pb2+, Zn2+ • hydrogen (H+), hydroxide (OH–), ammonium (NH4+), carbonate (CO32–), nitrate (NO3-), sulfate (SO42–)."}, {"id": "1.39", "text": "write formulae for compounds formed between the ions listed above"}, {"id": "1.40", "text": "draw dot-and-cross diagrams to show the formation of ionic compounds by electron transfer, limited to combinations of elements from Groups 1, 2, 3 and 5, 6, 7 only outer electrons need be shown"}, {"id": "1.41", "text": "understand ionic bonding in terms of electrostatic attractions"}, {"id": "1.42", "text": "understand why compounds with giant ionic lattices have high melting and boiling points"}, {"id": "1.43", "text": "know that ionic compounds do not conduct electricity when solid, but do conduct electricity when molten and in aqueous solution"}, {"id": "1.44", "text": "know that a covalent bond is formed between atoms by the sharing of a pair of electrons"}, {"id": "1.45", "text": "understand covalent bonds in terms of electrostatic attractions"}, {"id": "1.46", "text": "understand how to use dot-and-cross diagrams to represent covalent bonds in: • diatomic molecules, including hydrogen, oxygen, nitrogen, halogens and hydrogen halides • inorganic molecules including water, ammonia and carbon dioxide • organic molecules containing up to two carbon atoms, including methane, ethane, ethene and those containing halogen atoms."}, {"id": "1.47", "text": "explain why substances with a simple molecular structures are gases or liquids, or solids with low melting and boiling points the term intermolecular forces of attraction can be used to represent all forces between molecules"}, {"id": "1.48", "text": "explain why the melting and boiling points of substances with simple molecular structures increase, in general, with increasing relative molecular mass"}, {"id": "1.49", "text": "explain why substances with giant covalent structures are solids with high melting and boiling points"}, {"id": "1.50", "text": "explain how the structures of diamond, graphite and C60 fullerene influence their physical properties, including electrical conductivity and hardness"}, {"id": "1.51", "text": "know that covalent compounds do not usually conduct electricity"}, {"id": "1.52C", "text": "know how to represent a metallic lattice by a 2-D diagram"}, {"id": "1.53C", "text": "understand metallic bonding in terms of electrostatic attractions"}, {"id": "1.54C", "text": "explain typical physical properties of metals, including electrical conductivity and malleability"}, {"id": "1.55C", "text": "understand why covalent compounds do not conduct electricity"}, {"id": "1.56C", "text": "understand why ionic compounds conduct electricity only when molten or in aqueous solution"}, {"id": "1.57C", "text": "know that anion and cation are terms used to refer to negative and positive ions respectively"}, {"id": "1.58C", "text": "describe experiments to investigate electrolysis, using inert electrodes, of molten compounds (including lead(II) bromide) and aqueous solutions (including sodium chloride, dilute sulfuric acid and copper(II) sulfate) and to predict the products"}, {"id": "1.59C", "text": "write ionic half-equations representing the reactions at the electrodes during electrolysis and understand why these reactions are classified as oxidation or reduction"}, {"id": "1.60C", "text": "practical: investigate the electrolysis of aqueous solutions"}, {"id": "2.1", "text": "understand how the similarities in the reactions of these elements with water provide evidence for their recognition as a family of elements"}, {"id": "2.2", "text": "understand how the differences between the reactions of these elements with air and water provide evidence for the trend in reactivity in Group 1"}, {"id": "2.3", "text": "use knowledge of trends in Group 1 to predict the properties of other alkali metals"}, {"id": "2.4C", "text": "explain the trend in reactivity in Group 1 in terms of electronic configurations"}, {"id": "2.5", "text": "know the colours, physical states (at room temperature) and trends in physical properties of these elements"}, {"id": "2.6", "text": "use knowledge of trends in Group 7 to predict the properties of other halogens"}, {"id": "2.7", "text": "understand how displacement reactions involving halogens and halides provide evidence for the trend in reactivity in Group 7"}, {"id": "2.8C", "text": "explain the trend in reactivity in Group 7 in terms of electronic configurations"}, {"id": "2.9", "text": "know the approximate percentages by volume of the four most abundant gases in dry air"}, {"id": "2.10", "text": "understand how to determine the percentage by volume of oxygen in air using experiments involving the reactions of metals (e.g. iron) and non-metals (e.g. phosphorus) with air"}, {"id": "2.11", "text": "describe the combustion of elements in oxygen, including magnesium, hydrogen and sulfur"}, {"id": "2.12", "text": "describe the formation of carbon dioxide from the thermal decomposition of metal carbonates, including copper(II) carbonate"}, {"id": "2.13", "text": "know that carbon dioxide is a greenhouse gas and that increasing amounts in the atmosphere may contribute to climate change"}, {"id": "2.14", "text": "practical: determine the approximate percentage by volume of oxygen in air using a metal or a non-metal"}, {"id": "2.15", "text": "understand how metals can be arranged in a reactivity series based on their reactions with: • water • dilute hydrochloric or sulfuric acid."}, {"id": "2.16", "text": "understand how metals can be arranged in a reactivity series based on their displacement reactions between: • metals and metal oxides • metals and aqueous solutions of metal salts."}, {"id": "2.17", "text": "know the order of reactivity of these metals: potassium, sodium, lithium, calcium, magnesium, aluminium, zinc, iron, copper, silver, gold"}, {"id": "2.18", "text": "know the conditions under which iron rusts"}, {"id": "2.19", "text": "understand how the rusting of iron may be prevented by: • barrier methods • galvanising • sacrificial protection."}, {"id": "2.20", "text": "understand the terms: • oxidation • reduction • redox • oxidising agent • reducing agent in terms of gain or loss of oxygen and loss or gain of electrons."}, {"id": "2.21", "text": "practical: investigate reactions between dilute hydrochloric and sulfuric acids and metals (e.g. magnesium, zinc and iron)"}, {"id": "2.22C", "text": "know that most metals are extracted from ores found in the Earth’s crust and that unreactive metals are often found as the uncombined element"}, {"id": "2.23C", "text": "explain how the method of extraction of a metal is related to its position in the reactivity series, illustrated by carbon extraction for iron and electrolysis for aluminium"}, {"id": "2.24C", "text": "be able to comment on a metal extraction process, given appropriate information detailed knowledge of the processes used in the extraction of a specific metal is not required"}, {"id": "2.25C", "text": "explain the uses of aluminium, copper, iron and steel in terms of their properties the types of steel will be limited to low-carbon (mild), high-carbon and stainless"}, {"id": "2.26C", "text": "know that an alloy is a mixture of a metal and one or more elements, usually other metals or carbon"}, {"id": "2.27C", "text": "explain why alloys are harder than pure metals"}, {"id": "2.28", "text": "describe the use of litmus, phenolphthalein and methyl orange to distinguish between acidic and alkaline solutions"}, {"id": "2.29", "text": "understand how to use the pH scale, from 0–14, can be used to classify solutions as strongly acidic (0–3), weakly acidic (4–6), neutral (7), weakly alkaline (8–10) and strongly alkaline (11–14)"}, {"id": "2.30", "text": "describe the use of universal indicator to measure the approximate pH value of an aqueous solution"}, {"id": "2.31", "text": "know that acids in aqueous solution are a source of hydrogen ions and alkalis in a aqueous solution are a source of hydroxide ions"}, {"id": "2.32", "text": "know that alkalis can neutralise acids"}, {"id": "2.33C", "text": "describe how to carry out an acid-alkali titration"}, {"id": "2.34", "text": "know the general rules for predicting the solubility of ionic compounds in water: • common sodium, potassium and ammonium compounds are soluble • all nitrates are soluble • common chlorides are soluble, except those of silver and lead(II) • common sulfates are soluble, except for those of barium, calcium and lead(II) • common carbonates are insoluble, except for those of sodium, potassium and ammonium • common hydroxides are insoluble except for those of sodium, potassium and calcium (calcium hydroxide is slightly soluble)."}, {"id": "2.35", "text": "understand acids and bases in terms of proton transfer"}, {"id": "2.36", "text": "understand that an acid is a proton donor and a base is a proton acceptor"}, {"id": "2.37", "text": "describe the reactions of hydrochloric acid, sulfuric acid and nitric acid with metals, bases and metal carbonates (excluding the reactions between nitric acid and metals) to form salts"}, {"id": "2.38", "text": "know that metal oxides, metal hydroxides and ammonia can act as bases, and that alkalis are bases that are soluble in water"}, {"id": "2.39", "text": "describe an experiment to prepare a pure, dry sample of a soluble salt, starting from an insoluble reactant"}, {"id": "2.40C", "text": "describe an experiment to prepare a pure, dry sample of a soluble salt, starting from an acid and alkali"}, {"id": "2.41C", "text": "describe an experiment to prepare a pure, dry sample of an insoluble salt, starting from two soluble reactants"}, {"id": "2.42", "text": "practical: prepare a sample of pure, dry hydrated copper(II) sulfate crystals starting from copper(II) oxide"}, {"id": "2.43C", "text": "practical: prepare a sample of pure, dry lead(II) sulfate"}, {"id": "2.44", "text": "describe tests for these gases: • hydrogen • oxygen • carbon dioxide • ammonia • chlorine."}, {"id": "2.45", "text": "describe how to carry out a flame test"}, {"id": "2.46", "text": "know the colours formed in flame tests for these cations: • Li+ is red • Na+ is yellow • K+ is lilac • Ca2+ is orange-red • Cu2+ is blue-green."}, {"id": "2.47", "text": "describe tests for these cations: • NH4+ using sodium hydroxide solution and identifying the gas evolved • Cu2+, Fe2+ and Fe3+ using sodium hydroxide solution."}, {"id": "2.48", "text": "describe tests for these anions: • Cl–, Br– and I– using acidified silver nitrate solution • SO42– using acidified barium chloride solution • CO32– using hydrochloric acid and identifying the gas evolved."}, {"id": "2.49", "text": "describe a test for the presence of water using anhydrous copper(II) sulfate"}, {"id": "2.50", "text": "describe a physical test to show whether a sample of water is pure"}, {"id": "3.1", "text": "know that chemical reactions in which heat energy is given out are described as exothermic, and those in which heat energy is taken in are described as endothermic"}, {"id": "3.2", "text": "describe simple calorimetry experiments for reactions such as combustion, displacement, dissolving and neutralisation"}, {"id": "3.3", "text": "calculate the heat energy change from a measured temperature change using the expression Q = mcΔT"}, {"id": "3.4", "text": "calculate the molar enthalpy change (ΔH) from the heat energy change, Q"}, {"id": "3.5C", "text": "draw and explain energy level diagrams to represent exothermic and endothermic reactions"}, {"id": "3.6C", "text": "know that bond-breaking is an endothermic process and that bond-making is an exothermic process"}, {"id": "3.7C", "text": "use bond energies to calculate the enthalpy change during a chemical reaction"}, {"id": "3.8", "text": "practical: investigate temperature changes accompanying some of the following types of change: • salts dissolving in water • neutralisation reactions • displacement reactions • combustion reactions."}, {"id": "3.9", "text": "describe experiments to investigate the effects of changes in surface area of a solid, concentration of a solution, temperature and the use of a catalyst on the rate of a reaction"}, {"id": "3.10", "text": "describe the effects of changes in surface area of a solid, concentration of a solution, pressure of a gas, temperature and the use of a catalyst on the rate of a reaction"}, {"id": "3.11", "text": "explain the effects of changes in surface area of a solid, concentration of a solution, pressure of a gas and temperature on the rate of a reaction in terms of particle collision theory"}, {"id": "3.12", "text": "know that a catalyst is a substance that increases the rate of a reaction, but is chemically unchanged at the end of the reaction"}, {"id": "3.13", "text": "know that a catalyst works by providing an alternative pathway with lower activation energy"}, {"id": "3.14C", "text": "draw and explain reaction profile diagrams showing ΔH and activation energy"}, {"id": "3.15", "text": "practical: investigate the effect of changing the surface area of marble chips and of changing the concentration of hydrochloric acid on the rate of reaction between marble chips and dilute hydrochloric acid"}, {"id": "3.16", "text": "practical: investigate the effect of different solids on the catalytic decomposition of hydrogen peroxide solution"}, {"id": "3.17", "text": "know that some reactions are reversible and this is indicated by the symbol ⇌ in equations"}, {"id": "3.18", "text": "describe reversible reactions such as the dehydration of hydrated copper(II) sulfate and the effect of heat on ammonium chloride"}, {"id": "3.19C", "text": "know that a reversible reaction can reach dynamic equilibrium in a sealed container"}, {"id": "3.20C", "text": "know that the characteristics of a reaction at dynamic equilibrium are: • the forward and reverse reactions occur at the same rate • the concentrations of reactants and products remain constant."}, {"id": "3.21C", "text": "understand why a catalyst does not affect the position of equilibrium in a reversible reaction"}, {"id": "3.22C", "text": "know the effect of changing either temperature or pressure on the position of equilibrium in a reversible reaction: • an increase (or decrease) in temperature shifts the position of equilibrium in the direction of the endothermic (or exothermic) reaction • an increase (or decrease) in pressure shifts the position of equilibrium in the direction that produces fewer (or more) moles of gas References to Le Chatelier's principle are not required"}, {"id": "4.1", "text": "know that a hydrocarbon is a compound of hydrogen and carbon only"}, {"id": "4.2", "text": "understand how to represent organic molecules using empirical formulae, molecular formulae, general formulae, structural formulae and displayed formulae"}, {"id": "4.3", "text": "know what is meant by the terms homologous series, functional group and isomerism"}, {"id": "4.4", "text": "understand how to name compounds relevant to this specification using the rules of International Union of Pure and Applied Chemistry (IUPAC) nomenclature students will be expected to name compounds containing up to six carbon atoms"}, {"id": "4.5", "text": "understand how to write the possible structural and displayed formulae of an organic molecule given its molecular formula"}, {"id": "4.6", "text": "understand how to classify reactions of organic compounds as substitution, addition and combustion knowledge of reaction mechanisms is not required"}, {"id": "4.7", "text": "know that crude oil is a mixture of hydrocarbons"}, {"id": "4.8", "text": "describe how the industrial process of fractional distillation separates crude oil into fractions"}, {"id": "4.9", "text": "know the names and uses of the main fractions obtained from crude oil: refinery gases, gasoline, kerosene, diesel, fuel oil and bitumen"}, {"id": "4.10", "text": "know the trend in colour, boiling point and viscosity of the main fractions"}, {"id": "4.11", "text": "know that a fuel is a substance that, when burned, releases heat energy"}, {"id": "4.12", "text": "know the possible products of complete and incomplete combustion of hydrocarbons with oxygen in the air"}, {"id": "4.13", "text": "understand why carbon monoxide is poisonous, in terms of its effect on the capacity of blood to transport oxygen references to haemoglobin are not required"}, {"id": "4.14", "text": "know that, in car engines, the temperature reached is high enough to allow nitrogen and oxygen from air to react, forming oxides of nitrogen"}, {"id": "4.15", "text": "explain how the combustion of some impurities in hydrocarbon fuels results in the formation of sulfur dioxide"}, {"id": "4.16", "text": "understand how sulfur dioxide and oxides of nitrogen contribute to acid rain"}, {"id": "4.17", "text": "describe how long-chain alkanes are converted to alkenes and shorter-chain alkanes by catalytic cracking (using silica or alumina as the catalyst and a temperature in the range of 600–700 ºC)"}, {"id": "4.18", "text": "explain why cracking is necessary, in terms of the balance between supply and demand for different fractions"}, {"id": "4.19", "text": "know the general formula for alkanes"}, {"id": "4.20", "text": "explain why alkanes are classified as saturated hydrocarbons"}, {"id": "4.21", "text": "understand how to draw the structural and displayed formulae for alkanes with up to five carbon atoms in the molecule, and to name the unbranched-chain isomers"}, {"id": "4.22", "text": "describe the reactions of alkanes with halogens in the presence of ultraviolet radiation, limited to mono-substitution knowledge of reaction mechanisms is not required"}, {"id": "4.23", "text": "know that alkenes contain the functional group >C=C<"}, {"id": "4.24", "text": "know the general formula for alkenes"}, {"id": "4.25", "text": "explain why alkenes are classified as unsaturated hydrocarbons"}, {"id": "4.26", "text": "understand how to draw the structural and displayed formulae for alkenes with up to four carbon atoms in the molecule, and name the unbranched-chain isomers knowledge of cis/trans or E/Z notation is not required"}, {"id": "4.27", "text": "describe the reactions of alkenes with bromine to produce dibromoalkanes"}, {"id": "4.28", "text": "describe how bromine water can be used to distinguish between an alkane and an alkene"}, {"id": "4.29C", "text": "know that alcohols contain the functional group −OH"}, {"id": "4.30C", "text": "understand how to draw structural and displayed formulae for methanol, ethanol, propanol (propan-1-ol only) and butanol (butan-1-ol only), and name each compound the names propanol and butanol are acceptable"}, {"id": "4.31C", "text": "know that ethanol can be oxidised by: • burning in air or oxygen (complete combustion) • reaction with oxygen in the air to form ethanoic acid (microbial oxidation) • heating with potassium dichromate(VI) in dilute sulfuric acid to form ethanoic acid"}, {"id": "4.32C", "text": "know that ethanol can be manufactured by: • reacting ethene with steam in the presence of a phosphoric acid catalyst at a temperature of about 300 ºC and a pressure of about 60–70 atm • the fermentation of glucose, in the absence of air, at an optimum temperature of about 30 ºC and using the enzymes in yeast"}, {"id": "4.33C", "text": "understand the reasons for fermentation, in the absence of air, and at an optimum temperature"}, {"id": "4.34C", "text": "know that carboxylic acids contain the functional group"}, {"id": "4.35C", "text": "understand how to draw structural and displayed formulae for unbranched-chain carboxylic acids with up to four carbon atoms in the molecule, and name each compound"}, {"id": "4.36C", "text": "describe the reactions of aqueous solutions of carboxylic acids with metals and metal carbonates"}, {"id": "4.37C", "text": "know that vinegar is an aqueous solution containing ethanoic acid"}, {"id": "4.38C", "text": "know that esters contain the functional group"}, {"id": "4.39C", "text": "know that ethyl ethanoate is the ester produced when ethanol and ethanoic acid react in the presence of an acid catalyst"}, {"id": "4.40C", "text": "understand how to write the structural and displayed formulae of ethyl ethanoate"}, {"id": "4.41C", "text": "understand how to write the structural and displayed formulae of an ester, given the name or formula of the alcohol and carboxylic acid from which it is formed and vice versa"}, {"id": "4.42C", "text": "know that esters are volatile compounds with distinctive smells and are used as food flavourings and in perfumes"}, {"id": "4.43C", "text": "practical: prepare a sample of an ester such as ethyl ethanoate"}, {"id": "4.44", "text": "know that an addition polymer is formed by joining up many small molecules called monomers"}, {"id": "4.45", "text": "understand how to draw the repeat unit of an addition polymer, including poly(ethene), poly(propene), poly(chloroethene) and (poly)tetrafluoroethene"}, {"id": "4.46", "text": "understand how to deduce the structure of a monomer from the repeat unit of an addition polymer and vice versa"}, {"id": "4.47", "text": "explain problems in the disposal of addition polymers, including: • their inertness and inability to biodegrade • the production of toxic gases when they are burned."}, {"id": "4.48C", "text": "know that condensation polymerisation, in which a dicarboxylic acid reacts with a diol, produces a polyester and water"}, {"id": "4.49C", "text": "understand how to write the structural and displayed formula of a polyester, showing the repeat unit, given the formulae of the monomers from which it is formed including the reaction of ethanedioic acid and ethanediol:"}, {"id": "4.50C", "text": "know that some polyesters, known as biopolyesters, are biodegradable"}];
+const demo={"1.1": ["Measured strong", 86], "1.15": ["Developing", 68], "1.27": ["Measured good", 79], "1.34C": ["Review due", 54], "2.15": ["Measured weak", 42], "2.29": ["Measured strong", 91], "3.11": ["Developing", 63], "3.19C": ["Not measured", null], "4.23": ["Measured strong", 88], "4.27": ["Developing", 61]};
+const root=document.createElementNS(NS,'g'),edgeG=document.createElementNS(NS,'g'),nodeG=document.createElementNS(NS,'g'),animG=document.createElementNS(NS,'g');root.append(edgeG,nodeG,animG);svg.appendChild(root);
+const state={tx:0,ty:0,scale:1,lens:'student',mode:'overview',selected:null,hovered:null,drag:null,expanded:new Set(),expandedSpecs:new Set(),specMorph:new Map(),nodes:[],edges:[],homes:new Map(),appearing:new Map(),lastActivation:{t:0,x:0,y:0,id:null},holdTimer:null,holdTriggered:false,simRunning:false};
+const palette={Subject:'#6656a9',Section:'#6656a9',SubTopic:'#2a8b8a',SpecificationPoint:'#3d79a6',ExamPaper:'#c38422',Assessment:'#c38422'};
+const initialSections=[
+ {id:'subject',type:'Subject',label:'Chemistry',x:780,y:420,rx:42},
+ {id:'sec1',type:'Section',section:'1',label:'Principles of chemistry',x:390,y:220,rx:29},
+ {id:'sec2',type:'Section',section:'2',label:'Inorganic chemistry',x:1090,y:220,rx:29},
+ {id:'sec3',type:'Section',section:'3',label:'Physical chemistry',x:420,y:640,rx:29},
+ {id:'sec4',type:'Section',section:'4',label:'Organic chemistry',x:1080,y:650,rx:29},
+ {id:'paper1',type:'ExamPaper',label:'Paper 1C · 110 marks',x:1110,y:80,rx:18,meta:'2 hour · 61.1%'},
+ {id:'paper2',type:'ExamPaper',label:'Paper 2C · 70 marks',x:1280,y:135,rx:18,meta:'1h 15m · 38.9%'}
+];
+const sectionAnchors={1:[390,220],2:[1090,220],3:[420,640],4:[1080,650]};
+const subAnchors={};
+Object.keys(subtopics).forEach(s=>{const arr=subtopics[s], [cx,cy]=sectionAnchors[s]; arr.forEach((st,i)=>{const a=(i/arr.length)*Math.PI*2-Math.PI/2;subAnchors[st[0]]=[cx+Math.cos(a)*175,cy+Math.sin(a)*118]})});
+function pointOrd(id){const m=String(id).match(/^(\d+)\.(\d+)/);return m?{sec:m[1],ord:Number(m[2])}:{sec:'',ord:NaN}}
+function makePointOffset(idx,count){const rings=Math.max(1,Math.ceil(count/7));const perRing=Math.ceil(count/rings);const ring=74+Math.floor(idx/perRing)*26;const local=idx%perRing;const angle=(local/Math.max(1,perRing))*Math.PI*2-Math.PI/2+((idx%2)*0.11);return [Math.cos(angle)*ring,Math.sin(angle)*ring]}
+function makePointPlacement(section,subId,idx,count){const [cx,cy]=subAnchors[subId];const [ox,oy]=makePointOffset(idx,count);return [cx+ox,cy+oy]}
+const subPointCounts={
+ '1a':7,'1b':6,'1c':4,'1d':7,'1e':12,'1f':7,'1g':8,'1h':3,'1i':6,
+ '2a':4,'2b':4,'2c':6,'2d':7,'2e':6,'2f':6,'2g':10,'2h':7,
+ '3a':8,'3b':8,'3c':6,
+ '4a':6,'4b':12,'4c':4,'4d':6,'4e':5,'4f':4,'4g':6,'4h':7
+};
+const pointsBySubtopic=new Map();
+for(const sec of Object.keys(subtopics)){let offset=0;const secPoints=points.filter(p=>pointOrd(p.id).sec===sec);for(const def of subtopics[sec]){const count=subPointCounts[def[0]]||0;pointsBySubtopic.set(def[0],secPoints.slice(offset,offset+count));offset+=count;}}
+function pointsForSub(def){return pointsBySubtopic.get(def[0])||[]}
+const semanticEdges=[
+ ['p:1.18','p:1.19','pre'],['p:1.19','p:1.22','pre'],['p:1.25','p:1.28','pre'],['p:1.27','p:1.28','pre'],['p:1.28','p:1.29','pre'],['p:1.37','p:1.39','pre'],['p:1.41','p:1.42','pre'],['p:1.41','p:1.43','pre'],['p:1.44','p:1.46','pre'],['p:1.45','p:1.47','pre'],['p:1.57','p:1.58C','pre'],['p:1.59C','p:1.60C','rel'],
+ ['p:2.15','p:2.17','pre'],['p:2.15','p:2.20','pre'],['p:2.29','p:2.31','pre'],['p:2.35','p:2.36','pre'],['p:2.31','p:2.32','pre'],['p:2.34','p:2.37','rel'],
+ ['p:3.1','p:3.5C','pre'],['p:3.6C','p:3.7C','pre'],['p:3.9','p:3.11','pre'],['p:3.13','p:3.14C','pre'],['p:3.19C','p:3.20C','pre'],['p:3.22C','p:3.21C','rel'],
+ ['p:4.7','p:4.8','pre'],['p:4.8','p:4.9','rel'],['p:4.19','p:4.20','pre'],['p:4.23','p:4.25','pre'],['p:4.23','p:4.27','pre'],['p:4.27','p:4.28','rel'],['p:4.29C','p:4.31C','pre'],['p:4.29C','p:4.32C','pre'],['p:4.34C','p:4.36C','pre'],['p:4.39C','p:4.40C','pre'],['p:4.44','p:4.46','pre']
+];
+function makeBase(){
+ state.nodes=[];state.edges=[];state.expanded.clear();state.selected=null;state.hovered=null;
+ const add=(n)=>{n.vx=0;n.vy=0;n.homeX=n.x;n.homeY=n.y;state.nodes.push(n);state.homes.set(n.id,[n.x,n.y]);};
+ add({id:'subject',type:'Subject',label:'Chemistry',x:750,y:420,rx:42});
+ Object.keys(sectionAnchors).forEach(sec=>{
+   const [x,y]=sectionAnchors[sec]; add({id:'sec'+sec,type:'Section',section:sec,label:sections[sec].label,x,y,rx:29});
+ });
+ const papers=[{id:'paper1',type:'ExamPaper',label:'Paper 1C · 110 marks',x:1250,y:95,rx:18,meta:'2 hour · 61.1%'},{id:'paper2',type:'ExamPaper',label:'Paper 2C · 70 marks',x:1370,y:160,rx:18,meta:'1h 15m · 38.9%'}];papers.forEach(add);
+ Object.keys(subtopics).forEach(sec=>{
+   subtopics[sec].forEach((st,i)=>{
+     const [x,y]=subAnchors[st[0]]; add({id:st[0],type:'SubTopic',section:sec,label:st[1],x,y,rx:18});
+     const pts=pointsForSub(st);pts.forEach((pt,j)=>{
+       const [px,py]=makePointPlacement(sec,st[0],j,pts.length);
+       const [ox,oy]=makePointOffset(j,pts.length); add({id:'p:'+pt.id,pointId:pt.id,type:'SpecificationPoint',label:pt.id,statement:pt.text,section:sec,subtopic:st[1],x:px,y:py,localX:ox,localY:oy,rx:8});
+     });
+   });
+ });
+ state.edges.push(['subject','sec1','hier'],['subject','sec2','hier'],['subject','sec3','hier'],['subject','sec4','hier']);
+ Object.keys(subtopics).forEach(sec=>subtopics[sec].forEach(st=>{
+   state.edges.push(['sec'+sec,st[0],'hier']);
+   pointsForSub(st).forEach(pt=>state.edges.push([st[0],'p:'+pt.id,'hier']));
+ }));
+ for(const sec of ['1','2','3','4']){state.edges.push(['sec'+sec,'paper1','assess'],['sec'+sec,'paper2','assess']);}
+ state.edges.push(...semanticEdges.filter(([a,b])=>state.nodes.some(n=>n.id===a)&&state.nodes.some(n=>n.id===b)));
+}
+makeBase();
+function parentSubtopicId(n){return n.type==='SpecificationPoint'?subtopics[n.section]?.find(st=>st[1]===n.subtopic)?.[0]:null}
+function isSpecRevealed(n){if(n.type!=='SpecificationPoint')return true;const pid=parentSubtopicId(n);return !!pid&&state.expanded.has(pid)}
+function visibleForMode(n){if(!isSpecRevealed(n))return false;if(state.mode==='assessment')return n.type==='ExamPaper'||n.type==='SpecificationPoint'||n.type==='SubTopic'||n.type==='Section';if(state.mode==='progress')return n.type==='SpecificationPoint'||n.type==='SubTopic'||n.type==='Section'||n.id==='subject';if(state.mode==='knowledge')return n.type!=='ExamPaper'||state.selected?.startsWith('p:');return true}
+function nodeBy(){return new Map(state.nodes.map(n=>[n.id,n]))}
+function colorFor(n){
+ return n.type==='Section'?sections[n.section].color:palette[n.type]||'#3d79a6'
+}
+function specStrokeColor(n){
+ const q=learner(n);
+ if(q){
+   if(q[1]==null)return '#9b9b92';
+   if(q[1]<55)return '#c85b78';
+   if(q[1]<75)return '#c38422';
+   return '#4a9b70';
+ }
+ return palette.SpecificationPoint||'#3d79a6';
+}
+function radius(n){if(n.type==='Subject')return 42;if(n.type==='Section')return 29;if(n.type==='SubTopic')return 18;if(n.type==='ExamPaper')return 18;return 7}
+function specTextLines(n,maxWidth=330){
+ const words=(n.statement||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
+ const fits=(text)=>measureCtx.measureText(text).width<=maxWidth;
+ for(let word of words){
+   // Hard-wrap unusually long tokens so nothing can escape the box.
+   if(!fits(word)){
+     while(word.length){
+       let take=word.length;
+       while(take>1 && !fits(word.slice(0,take)+'-')) take--;
+       if(take===word.length){
+         const test=line?line+' '+word:word;
+         if(fits(test)){line=test;word='';break;}
+       }
+       if(line){lines.push(line);line='';}
+       const chunk=word.slice(0,Math.max(1,take-1))+'-';
+       lines.push(chunk);word=word.slice(Math.max(1,take-1));
+     }
+     continue;
+   }
+   const test=line?line+' '+word:word;
+   if(fits(test)) line=test; else {if(line)lines.push(line);line=word;}
+ }
+ if(line)lines.push(line);
+ return lines.length?lines:[''];
+}
+function specBoxSize(n){
+ const title=`${n.pointId}`;
+ // Compact card: the paragraph has a deliberately narrow, stable measure.
+ // The header contains the persistent icon followed by the specification number.
+ const maxContentWidth=118;
+ const lines=specTextLines(n,maxContentWidth);
+ const headerWidth=measureCtx.measureText(title).width+42;
+ const contentMax=Math.max(headerWidth,...lines.map(x=>measureCtx.measureText(x).width+24));
+ const w=Math.min(142,Math.max(118,Math.ceil(contentMax)));
+ const h=Math.max(44,Math.ceil(29+lines.length*10.2));
+ return {w,h,lines};
+}
+function specMorphProgress(n){const m=state.specMorph.get(n.id);return m?m.value:(state.expandedSpecs.has(n.id)?1:0)}
+function collisionRadius(n){if(n.type==='SpecificationPoint'){const p=specMorphProgress(n);if(p<=0.02)return 7;const z=specBoxSize(n);return 7+(Math.max(z.w,z.h)/2-7)*p}return radius(n)}
+function learner(n){if(n.type!=='SpecificationPoint')return null;return demo[n.pointId]||null}
+function ensureSubtopics(section){const arr=subtopics[section],map=nodeBy();for(const st of arr){if(!map.has(st[0])){const [x,y]=subAnchors[st[0]];state.nodes.push({id:st[0],type:'SubTopic',section,label:st[1],x,y,homeX:x,homeY:y,vx:0,vy:0})}}}
+function ensurePoints(subId){const n=nodeBy().get(subId);if(!n)return;const def=Object.values(subtopics).flat().find(x=>x[0]===subId);if(!def)return;const pts=pointsForSub(def);const map=nodeBy();pts.forEach((p,i)=>{if(map.has('p:'+p.id))return;const [x,y]=makePointPlacement(def[0][0],subId,i,pts.length);const [ox,oy]=makePointOffset(i,pts.length);state.nodes.push({id:'p:'+p.id,pointId:p.id,type:'SpecificationPoint',label:p.id,statement:p.text,section:def[0][0],subtopic:def[1],x,y,homeX:x,homeY:y,localX:ox,localY:oy,vx:0,vy:0})})}
+function renderPos(n){
+ const a=state.appearing.get(n.id);
+ if(a && n.type==='SpecificationPoint' && n._renderX!=null) return {x:n._renderX,y:n._renderY};
+ return {x:n.x,y:n.y};
+}
+function revealNodesAnimated(ids){
+ const now=performance.now(),map=nodeBy();
+ ids.forEach((id,i)=>{
+   const n=map.get(id); if(!n)return;
+   const pid=parentSubtopicId(n),p=pid?map.get(pid):null;
+   // SpecificationPoints bloom in the LOCAL coordinate system of their direct
+   // SubTopic. Their radial direction is determined only by their own index,
+   // never by the Section/Unit position. This is the key invariant:
+   // every point starts at the exact centre of its direct parent.
+   const localX=n.localX||0, localY=n.localY||0;
+   const parentPos=p?renderPos(p):{x:n.x,y:n.y};
+   const targetX=parentPos.x+localX, targetY=parentPos.y+localY;
+   const a={t:now,d:820,parentId:pid,localX,localY,targetX,targetY};
+   state.appearing.set(id,a);
+   n._renderX=parentPos.x;n._renderY=parentPos.y;n._appear=0;n._appearAngle=0;
+ });
+ refresh();
+ function frame(t){
+   let active=false;
+   const liveMap=nodeBy();
+   for(const id of ids){
+     const a=state.appearing.get(id); if(!a)continue;
+     const raw=Math.max(0,Math.min(1,(t-a.t)/a.d));
+     const e=1-Math.pow(1-raw,3);
+     const n=liveMap.get(id);
+     const parent=a.parentId?liveMap.get(a.parentId):null;
+     if(n){
+       // Resolve the DIRECT parent every frame. The child's direction and
+       // distance are purely its own local offset from that parent.
+       const p=parent?renderPos(parent):{x:a.targetX-a.localX*e,y:a.targetY-a.localY*e};
+       n._renderX=p.x+a.localX*e;
+       n._renderY=p.y+a.localY*e;
+       n._appear=e;
+       n._appearAngle=(1-e)*(-1.8+(hashAngle(id)%3.6));
+     }
+     if(raw<1)active=true;
+   }
+   refresh();
+   if(active)requestAnimationFrame(frame);
+   else ids.forEach(id=>{
+     const n=liveMap.get(id),a=state.appearing.get(id);
+     if(n&&a){
+       const parent=a.parentId?liveMap.get(a.parentId):null;
+       if(parent){
+         const p=renderPos(parent);
+         n.x=p.x+a.localX;n.y=p.y+a.localY;
+       } else { n.x=a.targetX;n.y=a.targetY; }
+       n.homeX=n.x;n.homeY=n.y;
+       n._appear=1;n._appearAngle=0;delete n._renderX;delete n._renderY;
+     }
+     state.appearing.delete(id);
+   });
+ }
+ requestAnimationFrame(frame);
+}
+function hashAngle(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h)}
+function expandNode(id){const n=nodeBy().get(id);if(!n)return;if(n.type==='Section'){ensureSubtopics(n.section);const was=state.expanded.has(id);if(was)state.expanded.delete(id);else state.expanded.add(id);if(!was){const ids=subtopics[n.section].map(st=>st[0]);revealNodesAnimated(ids)}else draw()}else if(n.type==='SubTopic'){const def=Object.values(subtopics).flat().find(x=>x[0]===id);if(!def)return;ensurePoints(id);const was=state.expanded.has(id);if(was)state.expanded.delete(id);else state.expanded.add(id);if(!was){const ids=pointsForSub(def).map(pt=>'p:'+pt.id);revealNodesAnimated(ids)}else draw()}else if(n.type==='SpecificationPoint'){openPanel(id)}}
+function relFor(n){return state.edges.filter(e=>e[0]===n.id||e[1]===n.id)}
+function applyTransform(){root.setAttribute('transform',`translate(${state.tx} ${state.ty}) scale(${state.scale})`)}
+function fitInitial(){state.tx=0;state.ty=0;state.scale=.88;applyTransform()}
+function shouldLabel(n){if(n.type==='SpecificationPoint')return state.scale>=1.02||state.selected===n.id||state.hovered===n.id;return true}
+function topicIconKey(n){
+ if(n.type==='Subject') return 'atom';
+ if(n.type==='Section') return n.section==='1'?'flask':n.section==='2'?'periodic':n.section==='3'?'energy':'organic';
+ const l=(n.label||'').toLowerCase();
+ if(l.includes('states of matter')) return 'matter';
+ if(l.includes('elements, compounds')) return 'mixture';
+ if(l.includes('atomic structure')) return 'atom';
+ if(l.includes('periodic table')) return 'periodic';
+ if(l.includes('formulae')||l.includes('equations')||l.includes('calculations')) return 'calculator';
+ if(l.includes('ionic bonding')) return 'ionic';
+ if(l.includes('covalent bonding')) return 'molecule';
+ if(l.includes('metallic bonding')) return 'lattice';
+ if(l.includes('electrolysis')) return 'electrolysis';
+ if(l.includes('group 1')) return 'flame';
+ if(l.includes('group 7')) return 'halogen';
+ if(l.includes('gases in the atmosphere')) return 'gas';
+ if(l.includes('reactivity series')) return 'reactivity';
+ if(l.includes('extraction and uses of metals')) return 'metal';
+ if(l.includes('acids, alkalis')||l.includes('acid')) return 'acid';
+ if(l.includes('chemical tests')) return 'test';
+ if(l.includes('energetics')) return 'energy';
+ if(l.includes('rates of reaction')) return 'rates';
+ if(l.includes('reversible reactions')||l.includes('equilibria')) return 'equilibrium';
+ if(l.includes('crude oil')) return 'oil';
+ if(l.includes('alkanes')) return 'chain';
+ if(l.includes('alkenes')) return 'double';
+ if(l.includes('alcohols')) return 'alcohol';
+ if(l.includes('carboxylic acids')) return 'acid';
+ if(l.includes('esters')) return 'ester';
+ if(l.includes('synthetic polymers')) return 'polymer';
+ return n.type==='SubTopic'?'topic':'atom';
+}
+function icon(kind,x,y,color,scale=1){
+ const g=document.createElementNS(NS,'g');g.setAttribute('transform',`translate(${x},${y}) scale(${scale})`);g.setAttribute('stroke',color);g.setAttribute('fill','none');g.setAttribute('stroke-width','2');g.setAttribute('stroke-linecap','round');g.setAttribute('stroke-linejoin','round');g.setAttribute('class','topicIcon');
+ const paths={
+ atom:'<circle cx="0" cy="0" r="3"/><ellipse cx="0" cy="0" rx="10" ry="4"/><ellipse cx="0" cy="0" rx="4" ry="10" transform="rotate(55)"/><circle cx="0" cy="0" r="1.6" class="topicIconFill"/>',
+ flask:'<path d="M-4-9v6l-7 11h22L4-3v-6"/><path d="M-6-3h12"/><path d="M-7 5h14"/>',
+ periodic:'<path d="M-10-9h5v5h-5zM-2-9h5v5h-5zM6-9h5v5H6zM-10-1h5v5h-5zM-2-1h5v5h-5zM6-1h5v5H6zM-10 7h5v5h-5zM-2 7h5v5h-5z"/>',
+ matter:'<circle cx="-6" cy="-4" r="2"/><circle cx="2" cy="1" r="2"/><circle cx="7" cy="-6" r="2"/><path d="M-9 9h18"/>',
+ mixture:'<path d="M-8-8h16M-8 8h16M-8-8v16M8-8v16"/><circle cx="-3" cy="-3" r="2"/><circle cx="4" cy="4" r="2"/>',
+ calculator:'<rect x="-9" y="-10" width="18" height="20" rx="2"/><path d="M-5-5h10M-5 0h2M2 0h2M-5 5h2M2 5h2"/>',
+ ionic:'<circle cx="-5" cy="0" r="4"/><circle cx="5" cy="0" r="4"/><path d="M-7-7v4M-9-5h4M7-7v4M5-5h4M-1 0h2"/>',
+ molecule:'<circle cx="-6" cy="2" r="4"/><circle cx="6" cy="2" r="4"/><circle cx="0" cy="-7" r="4"/><path d="M-3-1l-1 1M3-1l1 1M-3 3h6"/>',
+ lattice:'<circle cx="-7" cy="-5" r="2"/><circle cx="0" cy="-5" r="2"/><circle cx="7" cy="-5" r="2"/><circle cx="-7" cy="4" r="2"/><circle cx="0" cy="4" r="2"/><circle cx="7" cy="4" r="2"/><path d="M-5-5h3M2-5h3M-5 4h3M2 4h3M-7-3v5M0-3v5M7-3v5"/>',
+ electrolysis:'<path d="M-7-8v16M7-8v16M-10 0h6M4 0h6"/><path d="M-3-4h6M-3 4h6"/>',
+ flame:'<path d="M0-10c5 5 7 8 4 13-2 4-7 4-10 0-3-4 0-8 3-11 0 4 2 5 3 2z"/>',
+ halogen:'<circle cx="0" cy="0" r="9"/><path d="M-4-4l8 8M4-4l-8 8"/>',
+ gas:'<path d="M-10 4c4-8 7-8 10 0 3-8 6-8 10 0"/><path d="M-8 8h16"/>',
+ reactivity:'<path d="M-9 6l6-12 4 7 8-11"/><path d="M5-10h5v5"/>',
+ metal:'<path d="M-8 7l6-12 4 6 8-7"/><path d="M-10 8h20"/>',
+ acid:'<path d="M-4-9v6l-7 11h22L4-3v-6"/><path d="M-6-2h12"/><circle cx="0" cy="5" r="2"/>',
+ test:'<path d="M-5-9v12l-4 6h18l-4-6V-9"/><path d="M-7-9h4M3-9h4"/><path d="M-4 2h8"/>',
+ energy:'<path d="M1-11L-7 1h6l-2 11L7-2H1z"/>',
+ rates:'<circle cx="0" cy="0" r="9"/><path d="M0-6v6l4 3M-3-11h6"/>',
+ equilibrium:'<path d="M-10-5h15l-3-3M10 5H-5l3 3"/><path d="M-8 0h16"/>',
+ oil:'<path d="M-6-8h12v16H-6z"/><path d="M-3-4h6M-3 0h6M-3 4h6"/>',
+ chain:'<circle cx="-6" cy="0" r="4"/><circle cx="0" cy="0" r="4"/><circle cx="6" cy="0" r="4"/><path d="M-2 0h-1M2 0h-1"/>',
+ double:'<circle cx="-5" cy="0" r="4"/><circle cx="5" cy="0" r="4"/><path d="M-1-2h2M-1 2h2"/>',
+ alcohol:'<path d="M-4-9v6l-6 11h20L4-3v-6"/><path d="M-6-3h12"/><text x="0" y="6" text-anchor="middle" font-size="5" fill="'+color+'" stroke="none">OH</text>',
+ ester:'<path d="M-9 4h18M-6-3h4M2-3h4"/><circle cx="-6" cy="-3" r="2"/><circle cx="6" cy="-3" r="2"/>',
+ polymer:'<path d="M-10-6h5v12h-5zM-2-6h5v12h-5zM6-6h5v12H6z"/><path d="M-5 0h3M3 0h3"/>',
+ organic:'<polygon points="0,-10 9,-5 9,5 0,10 -9,5 -9,-5"/><circle cx="0" cy="0" r="3"/>',
+ topic:'<path d="M-9-7h18v14H-9z"/><path d="M-5-3h10M-5 1h7"/>'
+ };
+ g.innerHTML=paths[kind]||paths.topic;return g;
+}
+function nodeSvg(n){
+ const g=document.createElementNS(NS,'g');g.classList.add('node');g.dataset.id=n.id;g.dataset.type=n.type;
+ const r=radius(n),c=n.type==='SpecificationPoint'?specStrokeColor(n):colorFor(n),appear=n.type==='SpecificationPoint'?(n._appear==null?1:n._appear):1,pos=renderPos(n),px=pos.x,py=pos.y;
+ if(appear<1){const ang=(n._appearAngle||0);g.style.opacity=String(Math.max(.01,appear));g.setAttribute('transform',`translate(${px} ${py}) rotate(${ang}) scale(${0.12+0.88*appear}) translate(${-px} ${-py})`)}
+ const morph=n.type==='SpecificationPoint'?specMorphProgress(n):0;
+ const box=n.type==='SpecificationPoint'?specBoxSize(n):null;
+ const bw=n.type==='SpecificationPoint'?(2*r+(box.w-2*r)*morph):0;
+ const bh=n.type==='SpecificationPoint'?(2*r+(box.h-2*r)*morph):0;
+ const br=n.type==='SpecificationPoint'?(r*(1-morph)+10*morph):0;
+ const halo=document.createElementNS(NS,'circle');halo.setAttribute('cx',px);halo.setAttribute('cy',py);halo.setAttribute('r',r+(n.type==='SpecificationPoint'?4:7));halo.setAttribute('class','halo');halo.setAttribute('stroke',c);halo.style.opacity=String(n.type==='SpecificationPoint'?(1-morph):1);g.appendChild(halo);
+ let body;
+ if(n.type==='SpecificationPoint' && morph>0.001){
+   body=document.createElementNS(NS,'rect');body.setAttribute('x',px-bw/2);body.setAttribute('y',py-bh/2);body.setAttribute('width',bw);body.setAttribute('height',bh);body.setAttribute('rx',br);body.setAttribute('class','body');body.setAttribute('stroke',c);body.style.stroke=c;
+ }else{
+   body=document.createElementNS(NS,'circle');body.setAttribute('cx',px);body.setAttribute('cy',py);body.setAttribute('r',r);body.setAttribute('class','body');body.setAttribute('stroke',c);body.style.stroke=c;
+ }
+ g.appendChild(body);
+ if(n.type==='SpecificationPoint'){
+   const q=learner(n);if(q&&morph<.7){const ring=document.createElementNS(NS,'circle');ring.setAttribute('cx',px);ring.setAttribute('cy',py);ring.setAttribute('r',r+4);ring.setAttribute('class','stateRing');ring.setAttribute('stroke',q[1]==null?'#9b9b92':q[1]<55?'#c85b78':q[1]<75?'#c38422':'#4a9b70');ring.style.opacity=String(1-morph);g.appendChild(ring);if(q[0]==='Review due'){const d=document.createElementNS(NS,'circle');d.setAttribute('cx',px+r-1);d.setAttribute('cy',py-r+1);d.setAttribute('r','4');d.setAttribute('class','review');d.style.opacity=String(1-morph);g.appendChild(d)}}
+   // The SpecificationPoint icon is one persistent visual element.
+   // It starts at the centre of the circle and travels into the box header
+   // as the node morphs; it never fades or gets replaced.
+   // Persistent SpecificationPoint icon:
+   // keep the SAME icon in the DOM throughout the morph. Only its position
+   // changes. It must never inherit the text reveal timing or the morph fade.
+   // Persistent icon: it is a dedicated foreground element, not part of
+   // the text reveal and not allowed to disappear behind the morphing body.
+   // Its only animated property is its position.
+   const iconScale=Math.max(.45,r/16);
+   const iconStartX=px;
+   const iconStartY=py;
+   // The expanded header reserves a dedicated icon slot immediately before
+   // the specification number. The icon travels there as part of the morph.
+   // Final position: icon is in the header, immediately before the spec number;
+   // the paragraph below starts on the same left alignment as the icon.
+   // Expanded header geometry:
+   // ┌─────────────────────┐
+   // │  [icon]  1.1        │
+   // │  understand the...  │
+   // └─────────────────────┘
+   // The paragraph begins below the header and shares the icon's left edge.
+   const boxLeft=px-bw/2;
+   const boxTop=py-bh/2;
+   const iconEndX=boxLeft+17;
+   const iconEndY=boxTop+12;
+   const iconX=iconStartX+(iconEndX-iconStartX)*morph;
+   const iconY=iconStartY+(iconEndY-iconStartY)*morph;
+   const ic=icon('topic',iconX,iconY,c,iconScale);
+   ic.setAttribute('data-spec-icon','persistent');
+   ic.setAttribute('aria-hidden','true');
+   ic.style.setProperty('opacity','1','important');
+   ic.style.setProperty('visibility','visible','important');
+   ic.style.setProperty('display','inline','important');
+   ic.style.setProperty('pointer-events','none','important');
+
+   if(morph>0.64){
+     // Let the node become visually legible as a box before revealing copy.
+     // This removes the old "text arrives before the morph" snap.
+     const revealT=Math.max(0,Math.min(1,(morph-0.64)/0.36));
+     const fade=revealT*revealT*(3-2*revealT);
+     const title=document.createElementNS(NS,'text');
+     title.setAttribute('x',boxLeft+34);
+     title.setAttribute('y',boxTop+15);
+     title.setAttribute('text-anchor','start');
+     title.setAttribute('class','specCardTitle');
+     title.textContent=n.pointId;
+     title.style.opacity=String(fade);
+     g.appendChild(title);
+     const lines=box.lines;
+     lines.forEach((ln,i)=>{
+       const tx=document.createElementNS(NS,'text');
+       tx.setAttribute('x',boxLeft+12);
+       tx.setAttribute('y',boxTop+30+i*10.2);
+       tx.setAttribute('class','specCardText');
+       tx.textContent=ln;
+       tx.style.opacity=String(fade);
+       g.appendChild(tx)
+     });
+   }
+   // Append the icon LAST so the expanding card can never visually cover it.
+   // The icon remains present at every morph value, including fully expanded.
+   g.appendChild(ic);
+ } else {
+   if(n.type==='Section'||n.type==='Subject'){const p=document.createElementNS(NS,'circle');p.setAttribute('cx',px);p.setAttribute('cy',py);p.setAttribute('r',r+6);p.setAttribute('class','pulse');g.appendChild(p)}
+   g.appendChild(icon(topicIconKey(n),px,py,c,Math.max(.68,r/22)));
+ }
+ if(n.type==='ExamPaper'){const d=document.createElementNS(NS,'rect');d.setAttribute('x',px-9);d.setAttribute('y',py-9);d.setAttribute('width',18);d.setAttribute('height',18);d.setAttribute('rx',4);d.setAttribute('class','body');d.setAttribute('stroke',c);g.appendChild(d)}
+ if(shouldLabel(n) && !(n.type==='SpecificationPoint'&&morph>0.05)){const t=document.createElementNS(NS,'text');t.setAttribute('x',px);t.setAttribute('y',py+r+16);t.setAttribute('text-anchor','middle');t.setAttribute('class','label');t.textContent=n.type==='SpecificationPoint'?n.pointId:n.label;g.appendChild(t)}
+ if((state.scale>1.12||n.type!=='SpecificationPoint')&&!(n.type==='SpecificationPoint'&&morph>0.05)){const k=document.createElementNS(NS,'text');k.setAttribute('x',px);k.setAttribute('y',py-r-7);k.setAttribute('text-anchor','middle');k.setAttribute('class','kind');k.textContent=n.type==='SpecificationPoint'?'':n.type;g.appendChild(k)}
+ if(n.pointId&&/C$/.test(n.pointId)&&shouldLabel(n)&&!(n.type==='SpecificationPoint'&&morph>0.05)){const b=document.createElementNS(NS,'text');b.setAttribute('x',px);b.setAttribute('y',py+3);b.setAttribute('text-anchor','middle');b.setAttribute('class','cBadge');b.textContent='C';g.appendChild(b)}
+ g.addEventListener('pointerenter',()=>{state.hovered=n.id;refresh()});g.addEventListener('pointerleave',()=>{if(state.hovered===n.id){state.hovered=null;refresh()}});
+ g.addEventListener('pointerdown',e=>startNodeDrag(e,n));
+ g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activateNode(n,performance.now(),0,0)}});
+ g.setAttribute('tabindex','0');return g;
+}
+function animateSpecInline(id,open){
+ const n=nodeBy().get(id);if(!n)return;
+ const m=state.specMorph.get(id)||{value:open?0:1,target:open?1:0};m.target=open?1:0;m.t=performance.now();m.from=m.value;state.specMorph.set(id,m);
+ if(open)state.expandedSpecs.add(id);else state.expandedSpecs.delete(id);
+ if(!state.specMorphRunning){state.specMorphRunning=true;requestAnimationFrame(stepSpecMorph)}
+ state.alpha=Math.max(state.alpha||0,.018);if(!state.simRunning){state.simRunning=true;requestAnimationFrame(simulationTick)}
+}
+function stepSpecMorph(t){
+ let active=false;
+ for(const [id,m] of state.specMorph){
+   state.alpha=Math.max(state.alpha||0,.018);
+   const dt=Math.min(1,(t-(m.t||t))/1200);
+   // Smoother visual acceleration/deceleration than the previous cosine curve.
+   const q=dt*dt*dt*(dt*(dt*6-15)+10);
+   m.value=m.from+(m.target-m.from)*q;
+   if(Math.abs(m.target-m.value)>.002)active=true;
+   else{m.value=m.target;if(m.target===0)state.expandedSpecs.delete(id)}
+ }
+ refresh();
+ if(active)requestAnimationFrame(stepSpecMorph);
+ else{state.specMorphRunning=false;for(const [id,m] of state.specMorph){if(m.value===0||m.value===1)state.specMorph.delete(id)}}
+}
+function activateNode(n,now,x,y,opts={}){
+ if(opts.ctrl && n.type==='SpecificationPoint'){toggleSpecInline(n.id);return}
+ const last=state.lastActivation||{t:0,x:0,y:0,id:null};
+ const rapid=last.id===n.id && (now-last.t<500) && Math.hypot(x-last.x,y-last.y)<18;
+ state.lastActivation={t:now,x,y,id:n.id};
+ if(rapid && (n.type==='SubTopic'||n.type==='Section')){
+   expandNode(n.id);
+   state.lastActivation={t:0,x:0,y:0,id:null};
+   return;
+ }
+ if(n.type==='SpecificationPoint') openPanel(n.id);
+ else selectNode(n.id);
+}
+function toggleSpecInline(id){animateSpecInline(id,!state.expandedSpecs.has(id))}
+function drawEdges(){edgeG.innerHTML='';const map=nodeBy();for(const [a,b,type] of state.edges){const s=map.get(a),t=map.get(b);if(!s||!t||!visibleForMode(s)||!visibleForMode(t))continue;const sp=renderPos(s),tp=renderPos(t);const l=document.createElementNS(NS,'line');l.setAttribute('x1',sp.x);l.setAttribute('y1',sp.y);l.setAttribute('x2',tp.x);l.setAttribute('y2',tp.y);l.setAttribute('class','edge '+(type==='hier'?'hier':type==='pre'?'pre':type==='rel'?'rel':type==='assess'?'assess':'stateEdge'));if(state.selected && !(a===state.selected||b===state.selected))l.classList.add('dim');edgeG.appendChild(l)}}
+function refresh(){nodeG.innerHTML='';const map=nodeBy();const neighborhood=new Set();if(state.selected){for(const [a,b] of state.edges)if(a===state.selected)neighborhood.add(b);else if(b===state.selected)neighborhood.add(a)}for(const n of state.nodes){if(!visibleForMode(n))continue;const g=nodeSvg(n);if(state.selected===n.id)g.classList.add('selected');if(state.hovered===n.id)g.classList.add('hovered');if(state.selected&&n.id!==state.selected&&!neighborhood.has(n.id))g.classList.add('dim');nodeG.appendChild(g)}drawEdges();applyTransform();updateStatus()}
+function draw(){refresh()}
+function selectNode(id){state.selected=id;openPanel(id);centerOn(nodeBy().get(id),Math.max(1.15,Math.min(1.55,state.scale+0.3)),650);refresh()}
+function openPanel(id){const n=nodeBy().get(id);if(!n)return;document.getElementById('panel').classList.add('show');document.getElementById('p-title').textContent=n.pointId?`${n.pointId} · Specification point`:n.label;document.getElementById('p-type').textContent=n.type+(n.section?` · Section ${n.section}`:'');const l=learner(n);if(state.lens==='student'){document.getElementById('m1').textContent='Learner state';document.getElementById('primary').textContent=l?l[0]:'Not measured';document.getElementById('barFill').style.width=l&&l[1]!=null?`${l[1]}%`:'0%';document.getElementById('m2').textContent='Mastery';document.getElementById('secondary').textContent=l&&l[1]!=null?`${l[1]}%`:'-'}else{document.getElementById('m1').textContent='Class view';document.getElementById('primary').textContent=n.type==='SpecificationPoint'?'Demo aggregate':'Teaching lens';document.getElementById('barFill').style.width=n.type==='SpecificationPoint'&&l&&l[1]!=null?`${Math.min(100,l[1]+6)}%`:'0%';document.getElementById('m2').textContent='Coverage';document.getElementById('secondary').textContent=n.type==='SpecificationPoint'?'Coverage recorded':'Contextual'}
+let ctx='';if(n.type==='SpecificationPoint'){ctx=`<b>Subject:</b> Chemistry<br><b>Section:</b> ${sections[n.section].label}<br><b>Sub-topic:</b> ${n.subtopic}<br><b>Official code:</b> ${n.pointId}${/C$/.test(n.pointId)?' · C depth':''}`;document.getElementById('statement').textContent=n.statement||''}else if(n.type==='SubTopic'){ctx=`<b>Section:</b> ${sections[n.section].label}<br><b>Sub-topic:</b> ${n.label}<br><b>Contained specification points:</b> ${countPoints(n.id)}`;document.getElementById('statement').textContent='Official sub-topic from the selected Pearson Edexcel specification.'}else if(n.type==='Section'){ctx=`<b>Section ${n.section}</b><br>${n.label}<br><b>Specification hierarchy:</b> section → sub-topic → SpecificationPoint`;document.getElementById('statement').textContent='Official section from the selected Pearson Edexcel specification.'}else{ctx=`<b>Qualification:</b> Pearson Edexcel International GCSE<br><b>Subject:</b> Chemistry<br><b>Assessment role:</b> ${n.meta||'Paper-level assessment'}`;document.getElementById('statement').textContent='The specification states that questions may come from any topic area across the specification.'}
+document.getElementById('context').innerHTML=ctx;const links=relFor(n).map(e=>{const other=nodeBy().get(e[0]===id?e[1]:e[0]);if(!other)return '';const relation=e[2]==='hier'?'curriculum hierarchy':e[2]==='pre'?'prerequisite (prototype semantic link)':e[2]==='assess'?'assessment coverage':'related knowledge (prototype semantic link)';return `<div>${other.label||other.pointId} <span style="color:#8b9193">· ${relation}</span></div>`}).join('');document.getElementById('links').innerHTML=links||'<div>No direct relationships currently visible.</div>';document.getElementById('evidence').innerHTML=state.lens==='student'?(l?`<div><b>Demo overlay:</b> ${l[0]}</div><div><b>Value:</b> ${l[1]==null?'Not measured':l[1]+'%'}</div><div><b>Important:</b> UI demo state only; the graph does not calculate mastery.</div>`:'<div>NOT_MEASURED - no demo learner overlay attached to this point.</div>'):'<div>Teacher lens separates teaching coverage from class understanding. No real class data is embedded in this prototype.</div>';document.getElementById('assessment').innerHTML=`<div><b>Paper 1C:</b> 110 marks · 61.1%</div><div><b>Paper 2C:</b> 70 marks · 38.9%</div><div><b>Total:</b> 180 marks</div>`}
+function countPoints(subId){const d=Object.values(subtopics).flat().find(x=>x[0]===subId);return d?pointsForSub(d).length:0}
+function centerOn(n,targetScale=1.35,duration=650){if(!n)return;const start={tx:state.tx,ty:state.ty,scale:state.scale};const end={scale:targetScale,tx:W/2-n.x*targetScale,ty:H/2-n.y*targetScale};const t0=performance.now();function step(t){const q=Math.min(1,(t-t0)/duration),e=1-Math.pow(1-q,3);state.tx=start.tx+(end.tx-start.tx)*e;state.ty=start.ty+(end.ty-start.ty)*e;state.scale=start.scale+(end.scale-start.scale)*e;applyTransform();if(q<1)requestAnimationFrame(step);else refresh()}requestAnimationFrame(step)}
+function startNodeDrag(e,n){
+ e.stopPropagation();
+ if(e.pointerType==='touch'||e.pointerType==='pen') e.preventDefault();
+ state.holdTriggered=false;
+ if(state.holdTimer){clearTimeout(state.holdTimer);state.holdTimer=null}
+ // Ctrl+mouse on a SubTopic expands/collapses its SpecificationPoints
+ // in place. It deliberately bypasses zooming/panel navigation.
+ if(e.pointerType==='mouse' && e.ctrlKey && n.type==='SubTopic'){
+   state.drag={kind:'subtopicCtrl',id:n.id,x:e.clientX,y:e.clientY,moved:false,pointerId:e.pointerId};
+   svg.setPointerCapture?.(e.pointerId);
+   return;
+ }
+ // Keep the v16 inline SpecificationPoint interaction as an extra affordance.
+ if(e.pointerType==='mouse' && e.ctrlKey && n.type==='SpecificationPoint'){
+   state.drag={kind:'specCtrl',id:n.id,x:e.clientX,y:e.clientY,moved:false,pointerId:e.pointerId};
+   svg.setPointerCapture?.(e.pointerId);
+   return;
+ }
+ // Touch/pen long-press on the direct parent (SubTopic) expands/collapses
+ // its SpecificationPoints in place. Long-press on a SpecificationPoint
+ // keeps the v16 inline-detail behavior.
+ if((e.pointerType==='touch'||e.pointerType==='pen') && (n.type==='SubTopic'||n.type==='SpecificationPoint')){
+   const id=n.id, type=n.type;
+   state.holdTimer=setTimeout(()=>{
+     state.holdTimer=null;state.holdTriggered=true;
+     if(state.drag&&state.drag.id===id){
+       state.drag.kind=type==='SubTopic'?'subtopicHold':'specHold';
+     }
+     if(type==='SubTopic') expandNode(id);
+     else toggleSpecInline(id);
+   },650);
+ }
+ state.drag={kind:'node',id:n.id,x:e.clientX,y:e.clientY,ox:n.x,oy:n.y,moved:false,pointerId:e.pointerId};
+ n.vx=0;n.vy=0;
+ svg.setPointerCapture?.(e.pointerId);
+ svg.classList.add('grabbing');
+ reheat(0.9);
+}
+svg.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation()});
+svg.addEventListener('pointerdown',e=>{
+ if(e.target!==svg)return;
+ state.drag={kind:'pan',x:e.clientX,y:e.clientY,tx:state.tx,ty:state.ty,moved:false,pointerId:e.pointerId};
+ svg.setPointerCapture?.(e.pointerId);
+ svg.classList.add('grabbing');
+});
+svg.addEventListener('pointermove',e=>{
+ const d=state.drag;if(!d)return;
+ if(Math.hypot(e.clientX-d.x,e.clientY-d.y)>8){
+   d.moved=true;
+   if(state.holdTimer){clearTimeout(state.holdTimer);state.holdTimer=null}
+ }
+ if(d.kind==='pan'){
+   state.tx=d.tx+(e.clientX-d.x);state.ty=d.ty+(e.clientY-d.y);applyTransform();
+ }else{
+   const r=svg.getBoundingClientRect(),dx=(e.clientX-d.x)/r.width*W/state.scale,dy=(e.clientY-d.y)/r.height*H/state.scale,n=nodeBy().get(d.id);
+   if(n){
+     // The dragged node follows the pointer, but its home position is never
+     // changed. The live force simulation keeps running underneath it so
+     // nearby nodes are pushed away while the node is being moved.
+     n.x=d.ox+dx;n.y=d.oy+dy;n.vx=0;n.vy=0;
+     reheat(0.85);
+     refresh();
+   }
+ }
+});
+svg.addEventListener('pointerup',e=>{
+ const d=state.drag;if(!d)return;
+ if(state.holdTimer){clearTimeout(state.holdTimer);state.holdTimer=null}
+ if(d.kind==='subtopicCtrl'){
+   if(!d.moved){const n=nodeBy().get(d.id);if(n)expandNode(n.id)}
+ }else if(d.kind==='specCtrl'){
+   if(!d.moved){const n=nodeBy().get(d.id);if(n)toggleSpecInline(n.id)}
+ }else if(d.kind==='node'&&!d.moved){
+   const n=nodeBy().get(d.id);
+   if(n&&!state.holdTriggered)activateNode(n,performance.now(),e.clientX,e.clientY);
+ }else if(d.kind==='subtopicHold'||d.kind==='specHold'){
+   // The long-press action already fired; do not fall through to normal click.
+ }else if(d.kind==='node'){
+   const n=nodeBy().get(d.id);
+   if(n){n.vx=0;n.vy=0;}
+ }
+ state.drag=null;svg.classList.remove('grabbing');
+ // Release the node back into the physics: it is attracted to its original
+ // home position while continuing to repel the rest of the graph.
+ reheat(0.95);
+});
+svg.addEventListener('pointercancel',()=>{
+ if(state.holdTimer){clearTimeout(state.holdTimer);state.holdTimer=null}
+ const d=state.drag;
+ if(d?.kind==='node'){const n=nodeBy().get(d.id);if(n){n.vx=0;n.vy=0;}}
+ state.drag=null;state.holdTriggered=false;svg.classList.remove('grabbing');reheat(0.75);
+});
+svg.addEventListener('wheel',e=>{e.preventDefault();const r=svg.getBoundingClientRect(),mx=(e.clientX-r.left)/r.width*W,my=(e.clientY-r.top)/r.height*H,old=state.scale,next=Math.max(.32,Math.min(3.3,old*Math.exp(-e.deltaY*.0015)));state.tx=mx-(mx-state.tx)*(next/old);state.ty=my-(my-state.ty)*(next/old);state.scale=next;applyTransform();refresh()},{passive:false});
+function zoomBy(f){const old=state.scale,next=Math.max(.32,Math.min(3.3,old*f)),mx=W/2,my=H/2;state.tx=mx-(mx-state.tx)*(next/old);state.ty=my-(my-state.ty)*(next/old);state.scale=next;applyTransform();refresh()}
+function updateStatus(){const visibleCount=state.nodes.filter(visibleForMode).length;document.getElementById('status').textContent=`${state.nodes.length} graph objects · ${visibleCount} visible · ${state.edges.length} relationships · drag background to pan · wheel to zoom · drag nodes to reposition · nodes repel each other · released nodes return toward their original positions · click to inspect/focus · double-click (or rapid second click) a topic to bloom all specification points · Esc clears`}
+function reheat(a=.28){
+ state.alpha=Math.max(state.alpha||0,a);
+ if(!state.simRunning){state.simRunning=true;requestAnimationFrame(simulationTick)}
+}
+function simulationTick(){
+ let a=state.alpha||0;
+ const nodes=state.nodes.filter(n=>visibleForMode(n)&&!state.appearing.has(n.id));
+ const nodeSet=new Set(nodes),edges=state.edges;
+ const draggedId=state.drag?.kind==='node'?state.drag.id:null;
+
+ // Local collision/repulsion. A dragged node is pinned to the pointer,
+ // but still participates in the repulsion field, so it physically pushes
+ // neighboring nodes out of its way.
+ for(let i=0;i<nodes.length;i++){
+   const n=nodes[i],nDragged=n.id===draggedId;
+   let fx=0,fy=0;
+   if(!nDragged){
+     const homeK=0.022;
+     fx+=(n.homeX-n.x)*homeK;
+     fy+=(n.homeY-n.y)*homeK;
+   }
+   for(let j=i+1;j<nodes.length;j++){
+     const m=nodes[j],mDragged=m.id===draggedId;
+     const nExpandedSpec=n.type==='SpecificationPoint'&&specMorphProgress(n)>0.02;
+     const mExpandedSpec=m.type==='SpecificationPoint'&&specMorphProgress(m)>0.02;
+     // Expanded SpecificationPoints occupy the same physical plane as the KG.
+     // Their growing footprint therefore makes ordinary nodes move out of the way,
+     // while the expanded points also make room for one another.
+     let dx=n.x-m.x,dy=n.y-m.y;
+     const minDist=collisionRadius(n)+collisionRadius(m)+8;
+     const dist=Math.sqrt(dx*dx+dy*dy);
+     const d2=dx*dx+dy*dy+180;
+     const inv=1/Math.sqrt(d2);
+     // Expanded cards use a bounded response so opening a detail remains calm rather than explosive.
+     const gap=Math.max(0,minDist-dist);
+     const base=(nExpandedSpec||mExpandedSpec)?5200/d2:18000/d2;
+     const overlap=Math.min((nExpandedSpec||mExpandedSpec)?6:18,gap*((nExpandedSpec||mExpandedSpec)?.38:.9));
+     const f=base+overlap;
+     const rfx=dx*inv*f,rfy=dy*inv*f;
+     if(!nDragged){fx+=rfx;fy+=rfy}
+     if(!mDragged){
+       m.vx=(m.vx||0)-rfx*a;
+       m.vy=(m.vy||0)-rfy*a;
+     }
+   }
+   if(!nDragged){
+     n.vx=(n.vx||0)+fx*a;
+     n.vy=(n.vy||0)+fy*a;
+   }
+ }
+
+ // Relationship springs preserve the semantic structure while still allowing
+ // the whole neighborhood to move when a node is dragged.
+ for(const [aId,bId,type] of edges){
+   const n=nodeBy().get(aId),m=nodeBy().get(bId);
+   if(!n||!m||!nodeSet.has(n)||!nodeSet.has(m))continue;
+   const nDragged=n.id===draggedId,mDragged=m.id===draggedId;
+   const dx=m.x-n.x,dy=m.y-n.y,d=Math.sqrt(dx*dx+dy*dy)+.01;
+   let target=type==='hier'
+     ?(n.type==='Subject'||m.type==='Subject'?205:n.type==='Section'||m.type==='Section'?120:n.type==='SubTopic'||m.type==='SubTopic'?72:38)
+     :type==='pre'?115:type==='assess'?180:145;
+   const k=type==='hier'?0.028:type==='pre'?0.012:0.008;
+   const f=(d-target)*k,fx=dx/d*f,fy=dy/d*f;
+   if(!nDragged){n.vx=(n.vx||0)+fx*a;n.vy=(n.vy||0)+fy*a}
+   if(!mDragged){m.vx=(m.vx||0)-fx*a;m.vy=(m.vy||0)-fy*a}
+ }
+
+ // Integrate everything except the node currently attached to the pointer.
+ for(const n of nodes){
+   if(n.id===draggedId){n.vx=0;n.vy=0;continue}
+   n.vx=(n.vx||0)*.84;
+   n.vy=(n.vy||0)*.84;
+   n.x+=n.vx;
+   n.y+=n.vy;
+ }
+ a*=.94;
+ state.alpha=a;
+ if(a>.01){
+   refresh();
+   requestAnimationFrame(simulationTick);
+ }else{
+   state.simRunning=false;
+ }
+}
+function bootSimulation(){state.alpha=.9;state.simRunning=true;requestAnimationFrame(simulationTick)}
+
+document.getElementById('zin').onclick=()=>zoomBy(1.24);document.getElementById('zout').onclick=()=>zoomBy(.8);document.getElementById('reset').onclick=()=>{makeBase();state.tx=0;state.ty=0;state.scale=.88;document.getElementById('panel').classList.remove('show');fitInitial();bootSimulation();draw()};document.getElementById('focus').onclick=()=>{const id=state.lens==='student'?'p:2.15':'sec2';const n=nodeBy().get(id)||nodeBy().get('sec2');if(n)selectNode(n.id)};
+document.getElementById('close').onclick=()=>{state.selected=null;document.getElementById('panel').classList.remove('show');refresh()};
+window.addEventListener('keydown',e=>{if(e.key==='Escape'){state.selected=null;state.hovered=null;document.getElementById('panel').classList.remove('show');refresh()}if(e.key===' '){e.preventDefault();document.getElementById('reset').click()}});
+const search=document.getElementById('search');search.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=search.value.trim().toLowerCase();if(!q)return;const cand=state.nodes.find(n=>(n.label+' '+(n.statement||'')+' '+(n.pointId||'')).toLowerCase().includes(q));if(cand)selectNode(cand.id)}});
+document.querySelectorAll('.lens').forEach(b=>b.onclick=()=>{document.querySelectorAll('.lens').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.lens=b.dataset.lens;document.querySelector('#hud .subtitle').textContent=`OpenHuman spatial interaction study · real curriculum data · ${state.lens} lens`;refresh()});
+document.querySelectorAll('#modeBar button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#modeBar button').forEach(x=>x.classList.remove('activeMode'));b.classList.add('activeMode');state.mode=b.dataset.mode;refresh()});
+['learnBtn','practiceBtn','tutorBtn'].forEach(id=>document.getElementById(id).onclick=()=>{document.getElementById('status').textContent=document.getElementById(id).textContent+' · action placeholder from the graph read model';setTimeout(updateStatus,1700)});
+fitInitial();draw();bootSimulation();
+</script>
+</body></html>

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SyllabAI — OpenHuman-style Knowledge Universe</title>
+<style>
+  :root{--paper:#fbfbf8;--ink:#26313a;--muted:#66707a;--grid:#e6e5df;--nav:#f7f6f1}
+  *{box-sizing:border-box} html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  #app{height:100%;position:relative;background:var(--paper)}
+  #graph{width:100%;height:100%;display:block;cursor:grab}
+  #graph.grabbing{cursor:grabbing}
+  .edge{stroke:#6f767b;stroke-width:1.05;opacity:.68;fill:none}
+  .edge.secondary{stroke:#8a8f92;stroke-dasharray:5 6;opacity:.48}
+  .edge.weak{stroke:#e26d76;stroke-dasharray:3 5;opacity:.78}
+  .edge.active{stroke:#364a5c;stroke-width:1.8;opacity:.95}
+  .node{cursor:pointer}
+  .node circle.ring{fill:var(--paper);stroke-width:2.25}
+  .node circle.inner{fill:none;stroke-width:1.1;opacity:.35}
+  .node text{font-size:14px;fill:#242c32;paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+  .node.small text{font-size:11px}
+  .node .tiny{font-size:9px}
+  .pulse{animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{r:10;opacity:.25}50%{r:15;opacity:.04}}
+  .handoff{fill:#e44d72;opacity:.85}
+  #hud{position:absolute;left:24px;top:20px;pointer-events:none}
+  #title{font-size:17px;font-weight:600;letter-spacing:.2px}
+  #subtitle{font-size:11px;color:#6f767b;margin-top:5px}
+  #panel{position:absolute;right:18px;top:18px;width:330px;max-height:calc(100% - 92px);background:rgba(252,251,247,.96);border:1px solid #c7c6bf;box-shadow:0 12px 28px rgba(0,0,0,.08);padding:18px;display:none}
+  #panel.show{display:block}
+  #panel h2{font-size:18px;margin:0 0 7px}
+  #panel .type{font-size:11px;color:#6c757c;margin-bottom:16px}
+  #panel .row{display:flex;justify-content:space-between;margin:8px 0;font-size:12px}
+  #panel .bar{height:6px;background:#e8e6de;margin:6px 0 15px}
+  #panel .bar span{display:block;height:100%;background:#7c3aed;width:72%}
+  #panel button{font:inherit;background:var(--paper);border:1px solid #686e72;padding:8px 10px;margin-right:7px;cursor:pointer}
+  #close{position:absolute;top:8px;right:10px;border:0;background:none;font-size:17px;cursor:pointer;color:#61686d}
+  #legend{position:absolute;left:18px;bottom:64px;font-size:11px;color:#5d666c;background:rgba(251,251,248,.8);padding:6px 10px;border:1px solid #e2e0d8}
+  #bottom{position:absolute;left:0;right:0;bottom:0;height:42px;background:rgba(249,248,243,.96);border-top:1px solid #d9d7cf;display:flex;align-items:center;padding:0 14px;gap:22px;font-size:12px;letter-spacing:.1px}
+  .tab{display:flex;align-items:center;gap:7px;color:#515b61;cursor:pointer;user-select:none}
+  .tab.active{color:#1d272d;font-weight:600}
+  .ico{width:14px;height:14px;display:inline-block;border:1px solid #6b757b;border-radius:50%;position:relative}
+  .ico.tool:after{content:'';position:absolute;left:6px;top:1px;width:2px;height:10px;background:#6b757b;transform:rotate(45deg)}
+  .ico.workflow:before{content:'';position:absolute;left:2px;top:5px;width:9px;height:1px;background:#6b757b}
+  .ico.stage{border-radius:2px}
+  .ico.task{border-radius:3px}
+  .ico.info:after{content:'i';position:absolute;font-size:9px;left:4px;top:0px}
+  #help{position:absolute;right:18px;bottom:55px;font-size:10px;color:#80878b;background:rgba(251,251,248,.7);padding:5px 8px}
+</style>
+</head>
+<body>
+<div id="app">
+<svg id="graph" viewBox="0 0 1440 840" aria-label="SyllabAI knowledge universe"></svg>
+<div id="hud"><div id="title">SyllabAI Knowledge Universe</div><div id="subtitle">Curriculum · Knowledge · Learner State</div></div>
+<div id="legend">thin = relationship · dashed = evidence/secondary · color ring = semantic family · halo = learner state</div>
+<div id="help">drag canvas · drag node · wheel zoom · click node</div>
+<div id="panel"><button id="close">×</button><h2 id="p-title"></h2><div class="type" id="p-type"></div><div class="row"><span>Mastery</span><strong id="p-mastery"></strong></div><div class="bar"><span id="p-bar"></span></div><div class="row"><span>Review</span><strong id="p-review"></strong></div><div class="row"><span>Importance</span><strong id="p-importance"></strong></div><div style="font-size:11px;color:#626b70;margin:15px 0 8px">CONNECTED</div><div id="p-links" style="font-size:12px;line-height:1.65"></div><div style="margin-top:16px"><button>Learn</button><button>Practice</button><button>Tutor</button></div></div>
+<div id="bottom">
+  <div class="tab active"><span class="ico tool"></span>Tool</div>
+  <div class="tab"><span class="ico workflow"></span>Workflow</div>
+  <div class="tab"><span class="ico stage"></span>Stage</div>
+  <div class="tab"><span class="ico task"></span>SOP task</div>
+  <div class="tab"><span class="ico info"></span>flow placement</div>
+  <div style="margin-left:auto;color:#747b80">Prototype · OpenHuman visual grammar → SyllabAI semantics</div>
+</div>
+</div>
+<script>
+const svg=document.getElementById('graph');
+const panel=document.getElementById('panel');
+const NS='http://www.w3.org/2000/svg';
+const W=1440,H=840;
+const colors={blue:'#2877b8',teal:'#188b90',green:'#259a6a',orange:'#d98313',purple:'#5041a8',pink:'#dc4f72',ink:'#2f3940'};
+let state={scale:1,tx:0,ty:0,drag:null,selected:null};
+const g=document.createElementNS(NS,'g'); svg.appendChild(g);
+const edgesG=document.createElementNS(NS,'g'); const nodesG=document.createElementNS(NS,'g'); const animG=document.createElementNS(NS,'g'); g.append(edgesG,nodesG,animG);
+
+const nodes=[
+ {id:'chem',kind:'desk',x:720,y:350,r:43,c:colors.green,label:'Study desk',type:'learner workspace',m:84,importance:'High'},
+ {id:'stoich',kind:'concept',x:920,y:230,r:26,c:colors.blue,label:'Stoichiometry',type:'Concept',m:78,importance:'High'},
+ {id:'moles',kind:'concept',x:1080,y:355,r:23,c:colors.blue,label:'Moles',type:'Concept',m:91,importance:'High'},
+ {id:'equil',kind:'concept',x:950,y:500,r:24,c:colors.teal,label:'Equilibrium',type:'Concept',m:61,importance:'High',review:'Due'},
+ {id:'bond',kind:'concept',x:650,y:180,r:22,c:colors.teal,label:'Bonding',type:'Concept',m:88,importance:'Medium'},
+ {id:'enthalpy',kind:'concept',x:470,y:300,r:24,c:colors.blue,label:'Enthalpy',type:'Concept',m:72,importance:'Medium'},
+ {id:'kinetics',kind:'concept',x:490,y:500,r:25,c:colors.blue,label:'Kinetics',type:'Concept',m:49,importance:'High',review:'Due'},
+ {id:'acid',kind:'concept',x:720,y:580,r:24,c:colors.teal,label:'Acids & bases',type:'Concept',m:67,importance:'High'},
+ {id:'question',kind:'question',x:1190,y:190,r:30,c:colors.orange,label:'Question Q12',type:'Assessment item',m:61,importance:'High'},
+ {id:'spec',kind:'spec',x:1205,y:520,r:27,c:colors.purple,label:'Specification',type:'SpecificationPoint',m:61,importance:'High'},
+ {id:'resource',kind:'resource',x:340,y:190,r:27,c:colors.teal,label:'Revision note',type:'Resource',m:72,importance:'Medium'},
+ {id:'skill',kind:'skill',x:315,y:470,r:29,c:colors.green,label:'Problem solving',type:'Skill',m:56,importance:'High'},
+ {id:'exam',kind:'exam',x:330,y:650,r:31,c:colors.orange,label:'IAL exam',type:'Assessment',m:56,importance:'High'},
+ {id:'mistake',kind:'risk',x:1010,y:650,r:27,c:colors.pink,label:'Misconception',type:'Learner signal',m:43,importance:'High',review:'Active'},
+ {id:'memory',kind:'state',x:560,y:690,r:25,c:colors.purple,label:'My state',type:'Learner state',m:64,importance:'Context'}
+];
+
+// Outer workspace ring + central note field echoing the video composition.
+const outer=document.createElementNS(NS,'circle'); outer.setAttribute('cx',720);outer.setAttribute('cy',410);outer.setAttribute('r',330);outer.setAttribute('fill','none');outer.setAttribute('stroke','#c8c7c0');outer.setAttribute('stroke-width','1.25');g.insertBefore(outer,edgesG);
+const notes=document.createElementNS(NS,'circle'); notes.setAttribute('cx',720);notes.setAttribute('cy',415);notes.setAttribute('r',72);notes.setAttribute('fill','#fbfbf8');notes.setAttribute('stroke','#d5d3cc');notes.setAttribute('stroke-width','1');g.insertBefore(notes,edgesG);
+const noteLabel=document.createElementNS(NS,'text');noteLabel.setAttribute('x',720);noteLabel.setAttribute('y',500);noteLabel.setAttribute('text-anchor','middle');noteLabel.setAttribute('font-size','12');noteLabel.setAttribute('fill','#515a60');noteLabel.textContent='Notes';g.insertBefore(noteLabel,edgesG);
+for(let i=0;i<90;i++){const c=document.createElementNS(NS,'circle');const a=(i/90)*Math.PI*2;const rr=15+(i%9)*5;c.setAttribute('cx',720+Math.cos(a)*rr);c.setAttribute('cy',415+Math.sin(a)*rr);c.setAttribute('r',i%7===0?2.3:1.35);c.setAttribute('fill',i%11===0?colors.pink:'#8c9195');c.setAttribute('opacity',0.25+(i%5)*0.08);g.insertBefore(c,edgesG)}
+
+// Lots of tiny surrounding entities as in the source visual.
+for(let i=0;i<72;i++){
+  const a=(i*2.399)% (Math.PI*2); const rr=350+(i%6)*28; const x=720+Math.cos(a)*rr; const y=410+Math.sin(a)*rr*.78; 
+  const c=[colors.blue,colors.teal,colors.purple,colors.orange][i%4];
+  const cg=document.createElementNS(NS,'g'); cg.setAttribute('class','node small');
+  const r=document.createElementNS(NS,'circle');r.setAttribute('cx',x);r.setAttribute('cy',y);r.setAttribute('r',8);r.setAttribute('fill','#fbfbf8');r.setAttribute('stroke',c);r.setAttribute('stroke-width','1.6');
+  const t=document.createElementNS(NS,'text');t.setAttribute('x',x);t.setAttribute('y',y+20);t.setAttribute('text-anchor','middle');t.setAttribute('class','tiny');t.setAttribute('opacity','0');t.textContent=i%3===0?'topic':i%3===1?'task':'resource';
+  cg.append(r,t); nodesG.append(cg);
+}
+
+const relations=[
+ ['bond','stoich','prerequisite'],['moles','stoich','prerequisite'],['stoich','question','tests'],['question','spec','tests'],['equil','spec','contains'],
+ ['enthalpy','kinetics','related'],['kinetics','acid','related'],['kinetics','skill','supports'],['resource','bond','explains'],['skill','exam','assessed'],['acid','spec','contains'],
+ ['mistake','equil','evidence'],['memory','equil','state'],['memory','kinetics','state'],['chem','stoich','workspace'],['chem','equil','workspace'],['chem','skill','workspace'],
+ ['exam','question','assessment'],['stoich','moles','related'],['enthalpy','question','tests'],['acid','question','tests']
+];
+function lineFor(a,b,rel){const p=nodesBy.get(a),q=nodesBy.get(b);const l=document.createElementNS(NS,'line');l.setAttribute('x1',p.x);l.setAttribute('y1',p.y);l.setAttribute('x2',q.x);l.setAttribute('y2',q.y);l.setAttribute('class','edge '+(rel==='evidence'?'weak':(rel==='related'?'secondary':'')));l.dataset.rel=rel;l.dataset.a=a;l.dataset.b=b;edgesG.append(l)}
+const nodesBy=new Map(nodes.map(n=>[n.id,n])); relations.forEach(r=>lineFor(...r));
+
+function icon(kind,x,y,color){
+  const g=document.createElementNS(NS,'g');g.setAttribute('transform',`translate(${x},${y})`);g.setAttribute('stroke',color);g.setAttribute('fill','none');g.setAttribute('stroke-width','2');g.setAttribute('stroke-linecap','round');
+  if(kind==='desk'||kind==='state'){g.innerHTML='<circle cx="0" cy="-5" r="5"/><path d="M-9 10c1-7 5-10 9-10s8 3 9 10"/>';}
+  else if(kind==='question'||kind==='exam'){g.innerHTML='<rect x="-7" y="-9" width="14" height="18" rx="2"/><path d="M-4 -2h8M-4 3h8"/>';}
+  else if(kind==='resource'){g.innerHTML='<path d="M0-9v18M-7-4h14"/>'}
+  else if(kind==='skill'){g.innerHTML='<path d="M-8 2l5-7 4 4 6-8M4-9h5v5"/>'}
+  else if(kind==='spec'){g.innerHTML='<rect x="-8" y="-7" width="7" height="7"/><rect x="2" y="0" width="7" height="7"/><path d="M-1 0L2 0M-4 4L2 4"/>'}
+  else if(kind==='risk'){g.innerHTML='<path d="M0-10l9 18H-9z"/><path d="M0-4v6M0 6v1"/>'}
+  else{g.innerHTML='<circle cx="0" cy="0" r="6"/><path d="M-9 0h18M0-9v18"/>'}
+  return g;
+}
+function drawNode(n){
+ const ng=document.createElementNS(NS,'g');ng.setAttribute('class','node');ng.dataset.id=n.id;
+ const halo=document.createElementNS(NS,'circle');halo.setAttribute('class','inner');halo.setAttribute('cx',n.x);halo.setAttribute('cy',n.y);halo.setAttribute('r',n.r+7);halo.setAttribute('stroke',n.c);
+ ng.append(halo);
+ if(n.review){const p=document.createElementNS(NS,'circle');p.setAttribute('cx',n.x);p.setAttribute('cy',n.y);p.setAttribute('r',n.r+6);p.setAttribute('fill','none');p.setAttribute('stroke',n.c);p.setAttribute('stroke-width','2');p.setAttribute('class','pulse');ng.append(p)}
+ const ring=document.createElementNS(NS,'circle');ring.setAttribute('class','ring');ring.setAttribute('cx',n.x);ring.setAttribute('cy',n.y);ring.setAttribute('r',n.r);ring.setAttribute('stroke',n.c);ng.append(ring);
+ ng.append(icon(n.kind,n.x,n.y,n.c));
+ const label=document.createElementNS(NS,'text');label.setAttribute('x',n.x);label.setAttribute('y',n.y+n.r+18);label.setAttribute('text-anchor','middle');label.textContent=n.label;ng.append(label);
+ ng.addEventListener('pointerdown',e=>{e.stopPropagation();dragNode(n,e)}); ng.addEventListener('click',e=>{e.stopPropagation();selectNode(n)});
+ nodesG.append(ng);
+ return ng;
+}
+nodes.forEach(drawNode);
+
+function selectNode(n){state.selected=n.id;document.querySelectorAll('.edge').forEach(l=>{const on=l.dataset.a===n.id||l.dataset.b===n.id;l.classList.toggle('active',on)});document.getElementById('p-title').textContent=n.label;document.getElementById('p-type').textContent=n.type;document.getElementById('p-mastery').textContent=n.m? n.m+'%':'—';document.getElementById('p-bar').style.width=(n.m||0)+'%';document.getElementById('p-review').textContent=n.review||'Not due';document.getElementById('p-importance').textContent=n.importance;const links=relations.filter(r=>r[0]===n.id||r[1]===n.id).map(r=>`${nodesBy.get(r[0]===n.id?r[1]:r[0]).label} · ${r[2]}`);document.getElementById('p-links').innerHTML=links.length?links.join('<br>'):'No direct relationships';panel.classList.add('show')}
+document.getElementById('close').onclick=()=>{panel.classList.remove('show');document.querySelectorAll('.edge').forEach(l=>l.classList.remove('active'))}
+
+// Animated evidence/handoff particles.
+function handoff(aId,bId){const a=nodesBy.get(aId),b=nodesBy.get(bId);const c=document.createElementNS(NS,'circle');c.setAttribute('r',3.5);c.setAttribute('fill',colors.pink);c.setAttribute('class','handoff');animG.append(c);let t=0;function step(){t+=.018;const x=a.x+(b.x-a.x)*t,y=a.y+(b.y-a.y)*t;c.setAttribute('cx',x);c.setAttribute('cy',y);if(t<1)requestAnimationFrame(step);else c.remove()}step()}
+setInterval(()=>handoff('kinetics','skill'),2200);setInterval(()=>handoff('question','spec'),3100);setInterval(()=>handoff('memory','equil'),4100);
+
+function applyTransform(){g.setAttribute('transform',`translate(${state.tx} ${state.ty}) scale(${state.scale})`)}
+svg.addEventListener('wheel',e=>{e.preventDefault();const rect=svg.getBoundingClientRect();const mx=(e.clientX-rect.left)/rect.width*W;const my=(e.clientY-rect.top)/rect.height*H;const old=state.scale;const next=Math.max(.45,Math.min(2.2,old*Math.exp(-e.deltaY*.0015)));state.tx += mx-(mx-state.tx)*(next/old);state.ty += my-(my-state.ty)*(next/old);state.scale=next;applyTransform()},{passive:false});
+svg.addEventListener('pointerdown',e=>{if(e.target!==svg)return;state.drag={kind:'pan',x:e.clientX,y:e.clientY,tx:state.tx,ty:state.ty};svg.setPointerCapture(e.pointerId);svg.classList.add('grabbing')});
+svg.addEventListener('pointermove',e=>{const d=state.drag;if(!d)return;if(d.kind==='pan'){state.tx=d.tx+(e.clientX-d.x);state.ty=d.ty+(e.clientY-d.y);applyTransform()}});
+svg.addEventListener('pointerup',()=>{state.drag=null;svg.classList.remove('grabbing')});
+function dragNode(n,e){state.drag={kind:'node',id:n.id,x:e.clientX,y:e.clientY,ox:n.x,oy:n.y};svg.setPointerCapture(e.pointerId);svg.classList.add('grabbing')}
+svg.addEventListener('pointermove',e=>{const d=state.drag;if(!d||d.kind!=='node')return;const rect=svg.getBoundingClientRect();const dx=(e.clientX-d.x)/rect.width*W/state.scale;const dy=(e.clientY-d.y)/rect.height*H/state.scale;n=nodesBy.get(d.id);n.x=d.ox+dx;n.y=d.oy+dy;redrawPositions();});
+svg.addEventListener('pointerup',e=>{if(state.drag&&state.drag.kind==='node'){state.drag=null;svg.classList.remove('grabbing')}});
+function redrawPositions(){document.querySelectorAll('#graph .node').forEach(el=>{const n=nodesBy.get(el.dataset.id);const halo=el.querySelector('circle.inner');if(halo){halo.setAttribute('cx',n.x);halo.setAttribute('cy',n.y)}el.querySelectorAll('circle.ring').forEach(c=>{c.setAttribute('cx',n.x);c.setAttribute('cy',n.y)});const p=el.querySelector('.pulse');if(p){p.setAttribute('cx',n.x);p.setAttribute('cy',n.y)}const tx=el.querySelector('text');if(tx){tx.setAttribute('x',n.x);tx.setAttribute('y',n.y+n.r+18)}el.querySelector('g').setAttribute('transform',`translate(${n.x},${n.y})`)});document.querySelectorAll('.edge').forEach(l=>{const a=nodesBy.get(l.dataset.a),b=nodesBy.get(l.dataset.b);l.setAttribute('x1',a.x);l.setAttribute('y1',a.y);l.setAttribute('x2',b.x);l.setAttribute('y2',b.y)});applyTransform()}
+applyTransform();
+</script>
+</body></html>

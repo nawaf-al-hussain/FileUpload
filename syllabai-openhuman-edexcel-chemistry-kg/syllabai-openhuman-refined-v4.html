@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SyllabAI — OpenHuman-faithful Interactive Graph</title>
+<style>
+:root{--paper:#faf9f5;--ink:#222a30;--muted:#6e7478;--line:#6c7378;--panel:rgba(252,251,247,.97);--grid:#e7e4dc;--border:#cecbc2}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+#app{height:100%;position:relative;background:var(--paper)}
+#graph{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#graph.grabbing{cursor:grabbing}
+.edge{fill:none;stroke:#777d81;stroke-width:1;opacity:.58;transition:opacity .2s,stroke-width .2s}
+.edge.secondary{stroke:#8d9295;stroke-dasharray:5 6;opacity:.42}
+.edge.evidence{stroke:#d75d73;stroke-dasharray:3 4;opacity:.68}
+.edge.tests{stroke:#c98519;opacity:.68}
+.edge.active{stroke:#303b44;stroke-width:2;opacity:.95}
+.edge.dim{opacity:.08}
+.node{cursor:pointer;transition:opacity .18s}
+.node.dim{opacity:.14}
+.node.near{opacity:1}
+.node.selected .ring{stroke-width:2.8}
+.node.hovered .ring{stroke-width:2.8}
+.node text{font-size:13px;fill:#262d32;paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round;pointer-events:none}
+.node.small text{font-size:10px}
+.node .label.dim{opacity:.15}
+.ring{fill:var(--paper);stroke-width:2.2}
+.halo{fill:none;stroke-width:1.2;opacity:.22}
+.pulse{fill:none;stroke-width:1.5;opacity:.35}
+@keyframes breathe{0%,100%{opacity:.18}50%{opacity:.42}}
+.pulse{animation:breathe 2.2s ease-in-out infinite}
+.activity{fill:#da5773;opacity:.95}
+#hud{position:absolute;left:22px;top:18px;pointer-events:none}
+#title{font-size:17px;font-weight:600;letter-spacing:.2px}
+#subtitle{font-size:11px;color:var(--muted);margin-top:5px}
+#searchWrap{position:absolute;left:50%;top:15px;transform:translateX(-50%);width:360px;z-index:4}
+#search{width:100%;height:34px;border:1px solid var(--border);background:rgba(255,255,252,.88);padding:0 12px;font:inherit;font-size:11px;outline:none}
+#search:focus{border-color:#949a9e;box-shadow:0 0 0 2px rgba(80,80,80,.06)}
+#controls{position:absolute;left:18px;bottom:58px;display:flex;flex-direction:column;gap:5px;z-index:4}
+.ctrl{width:34px;height:34px;border:1px solid var(--border);background:rgba(252,251,247,.92);font:inherit;cursor:pointer;color:#4e575d}
+.ctrl:hover{background:#fff}
+#modeBar{position:absolute;right:18px;top:16px;display:flex;gap:6px;z-index:4}
+.mode{border:1px solid var(--border);background:rgba(252,251,247,.9);font:inherit;font-size:10px;padding:7px 9px;cursor:pointer;color:#596168}
+.mode.active{font-weight:700;background:#fff;color:#202a30}
+#panel{position:absolute;right:18px;top:62px;width:330px;max-height:calc(100% - 120px);overflow:auto;background:var(--panel);border:1px solid var(--border);box-shadow:0 12px 28px rgba(0,0,0,.08);padding:17px;display:none;z-index:5}
+#panel.show{display:block}
+#close{position:absolute;top:7px;right:9px;border:0;background:none;font-size:17px;cursor:pointer;color:#636b70}
+#panel h2{font-size:18px;margin:0 26px 6px 0}
+#panel .type{font-size:10px;color:#737a7e;margin-bottom:15px}
+.row{display:flex;justify-content:space-between;margin:8px 0;font-size:11px}
+.bar{height:6px;background:#e5e2da;margin:5px 0 14px}.bar span{display:block;height:100%;background:#6f5ab6;width:0}
+.section{font-size:10px;color:#71787d;margin:14px 0 7px;text-transform:uppercase}
+.links{font-size:11px;line-height:1.6}
+.actions{display:flex;gap:6px;margin-top:15px}.actions button{font:inherit;font-size:10px;padding:7px 9px;border:1px solid #8b9093;background:#fff;cursor:pointer}
+#legend{position:absolute;left:62px;bottom:59px;background:rgba(251,250,246,.82);border:1px solid #e2dfd7;padding:6px 9px;color:#5f686e;font-size:10px;z-index:3}
+#status{position:absolute;left:50%;bottom:55px;transform:translateX(-50%);font-size:10px;color:#7a8084;background:rgba(251,250,246,.72);padding:5px 8px;pointer-events:none;z-index:3}
+#bottom{position:absolute;left:0;right:0;bottom:0;height:40px;background:rgba(249,248,243,.96);border-top:1px solid #d9d7cf;display:flex;align-items:center;padding:0 14px;gap:22px;font-size:11px;z-index:4}
+.tab{display:flex;align-items:center;gap:7px;color:#515b61;cursor:pointer;user-select:none}.tab.active{color:#1d272d;font-weight:600}
+.ico{width:14px;height:14px;display:inline-block;border:1px solid #6b757b;border-radius:50%;position:relative}.ico.workflow{border-radius:2px}.ico.stage{border-radius:2px 2px 5px 5px}.ico.task{border-radius:3px}.ico.info:after{content:'i';position:absolute;font-size:9px;left:4px;top:0}
+#tips{position:absolute;right:16px;bottom:51px;font-size:9px;color:#7f868a;background:rgba(251,250,246,.75);padding:5px 7px;z-index:3}
+</style>
+</head>
+<body>
+<div id="app">
+<svg id="graph" viewBox="0 0 1440 840" aria-label="Interactive SyllabAI knowledge graph"></svg>
+<div id="hud"><div id="title">SyllabAI Knowledge Universe</div><div id="subtitle">OpenHuman interaction grammar → SyllabAI academic semantics</div></div>
+<div id="searchWrap"><input id="search" placeholder="Search concepts, questions, specification points…" autocomplete="off"/></div>
+<div id="modeBar">
+  <button class="mode active" data-mode="curriculum">Curriculum</button>
+  <button class="mode" data-mode="knowledge">Knowledge</button>
+  <button class="mode" data-mode="progress">My Progress</button>
+  <button class="mode" data-mode="question">Question</button>
+</div>
+<div id="controls"><button class="ctrl" id="zin">+</button><button class="ctrl" id="zout">−</button><button class="ctrl" id="reset">⌖</button><button class="ctrl" id="focusMe">◉</button></div>
+<div id="legend">solid = hierarchy / prerequisite · dashed = semantic · rose = evidence · gold = tested · ring = learner state</div>
+<div id="status">scroll to zoom · drag canvas to pan · drag nodes to reposition · click to focus · double-click to expand · Esc clears</div>
+<div id="tips">OpenHuman-style focus + context; semantic labels appear on selection</div>
+<div id="panel"><button id="close">×</button><h2 id="p-title"></h2><div class="type" id="p-type"></div>
+<div class="row"><span>Mastery</span><strong id="p-mastery">—</strong></div><div class="bar"><span id="p-bar"></span></div>
+<div class="row"><span>Review</span><strong id="p-review">—</strong></div><div class="row"><span>Importance</span><strong id="p-importance">—</strong></div>
+<div class="section">Connected</div><div id="p-links" class="links"></div>
+<div class="section">Why / Next</div><div id="p-why" class="links"></div>
+<div class="actions"><button id="learnBtn">Learn</button><button id="practiceBtn">Practice</button><button id="tutorBtn">Tutor</button></div></div>
+<div id="bottom"><div class="tab active"><span class="ico"></span>Tool</div><div class="tab"><span class="ico workflow"></span>Workflow</div><div class="tab"><span class="ico stage"></span>Stage</div><div class="tab"><span class="ico task"></span>SOP task</div><div class="tab"><span class="ico info"></span>flow placement</div><div style="margin-left:auto;color:#747b80">Interactive prototype · Pixi/d3-force behavior translated to standalone SVG</div></div>
+</div>
+<script>
+const svg=document.getElementById('graph');
+const NS='http://www.w3.org/2000/svg';
+const W=1440,H=840;
+const C={blue:'#2f78b7',teal:'#188c91',green:'#2b9a69',orange:'#d28617',purple:'#5a49aa',pink:'#d55474',slate:'#748088',ink:'#2e383f'};
+const state={tx:0,ty:0,scale:1,selected:null,hovered:null,drag:null,mode:'curriculum',ready:false};
+const root=document.createElementNS(NS,'g'); const edgeG=document.createElementNS(NS,'g'); const nodeG=document.createElementNS(NS,'g'); const animG=document.createElementNS(NS,'g');
+root.append(edgeG,nodeG,animG); svg.appendChild(root);
+
+const base=[
+{id:'subject',kind:'desk',x:720,y:390,r:46,c:C.green,label:'Chemistry',type:'Subject',m:84,importance:'High'},
+{id:'unit',kind:'concept',x:505,y:250,r:30,c:C.purple,label:'Unit 1',type:'Unit / section',m:79,importance:'High'},
+{id:'atomic',kind:'concept',x:640,y:165,r:26,c:C.teal,label:'Atomic structure',type:'Topic',m:88,importance:'High'},
+{id:'bonding',kind:'concept',x:860,y:170,r:26,c:C.teal,label:'Bonding',type:'Topic',m:91,importance:'High'},
+{id:'moles',kind:'concept',x:1015,y:300,r:26,c:C.blue,label:'Moles',type:'Concept',m:91,importance:'High'},
+{id:'stoich',kind:'concept',x:1070,y:455,r:28,c:C.blue,label:'Stoichiometry',type:'Concept',m:78,importance:'High'},
+{id:'equil',kind:'concept',x:930,y:585,r:28,c:C.teal,label:'Equilibrium',type:'Concept',m:61,importance:'High',review:'Due'},
+{id:'kinetics',kind:'concept',x:690,y:620,r:28,c:C.blue,label:'Kinetics',type:'Concept',m:49,importance:'High',review:'Due'},
+{id:'acids',kind:'concept',x:475,y:555,r:28,c:C.teal,label:'Acids & bases',type:'Concept',m:67,importance:'High'},
+{id:'enthalpy',kind:'concept',x:390,y:370,r:27,c:C.blue,label:'Enthalpy',type:'Concept',m:72,importance:'Medium'},
+{id:'spec',kind:'spec',x:1190,y:500,r:30,c:C.purple,label:'Specification point',type:'SpecificationPoint',m:61,importance:'High'},
+{id:'question',kind:'question',x:1185,y:260,r:32,c:C.orange,label:'Question Q12',type:'Question',m:61,importance:'High'},
+{id:'exam',kind:'exam',x:1045,y:120,r:32,c:C.orange,label:'IAL exam',type:'Assessment',m:56,importance:'High'},
+{id:'skill',kind:'skill',x:300,y:500,r:30,c:C.green,label:'Problem solving',type:'Skill',m:56,importance:'High'},
+{id:'resource',kind:'resource',x:255,y:245,r:28,c:C.teal,label:'Revision note',type:'Resource',m:72,importance:'Medium'},
+{id:'risk',kind:'risk',x:1085,y:685,r:29,c:C.pink,label:'Misconception',type:'Learner signal',m:43,importance:'High',review:'Active'},
+{id:'me',kind:'state',x:510,y:700,r:28,c:C.purple,label:'My state',type:'Learner state',m:64,importance:'Context'}
+];
+const hidden={
+ calc:[{id:'deriv',kind:'concept',x:770,y:315,r:24,c:C.blue,label:'Derivatives',type:'Concept',m:72,importance:'High'},{id:'rates',kind:'spec',x:835,y:420,r:21,c:C.purple,label:'Rates specification',type:'SpecificationPoint',m:68,importance:'Medium'}],
+ stoich:[{id:'conc',kind:'concept',x:1115,y:365,r:23,c:C.blue,label:'Concentration',type:'Concept',m:75,importance:'High'}],
+ equil:[{id:'lechat',kind:'concept',x:890,y:680,r:23,c:C.teal,label:'Le Chatelier',type:'Concept',m:52,importance:'High',review:'Due'}]
+};
+let nodes=base.map(n=>({...n}));
+const relations=[
+['subject','unit','contains'],['unit','atomic','contains'],['unit','bonding','contains'],['unit','moles','contains'],
+['atomic','bonding','prerequisite'],['moles','stoich','prerequisite'],['bonding','stoich','supports'],['stoich','equil','prerequisite'],['enthalpy','kinetics','related'],['kinetics','equil','related'],['kinetics','skill','supports'],['acids','equil','related'],
+['question','spec','tests'],['question','stoich','tests'],['exam','question','assessment'],['resource','bonding','explains'],['skill','exam','assessed'],['risk','equil','evidence'],['me','kinetics','state'],['me','equil','state'],['subject','skill','workspace'],['unit','resource','reference']
+];
+const nodesBy=()=>new Map(nodes.map(n=>[n.id,n]));
+const relIndex=()=>{const m=new Map(); for(const r of relations){if(!m.has(r[0]))m.set(r[0],[]);if(!m.has(r[1]))m.set(r[1],[]);m.get(r[0]).push(r);m.get(r[1]).push(r)} return m};
+
+function icon(kind,x,y,color,scale=1){
+ const g=document.createElementNS(NS,'g'); g.setAttribute('transform',`translate(${x},${y}) scale(${scale})`); g.setAttribute('stroke',color); g.setAttribute('fill','none'); g.setAttribute('stroke-width','2'); g.setAttribute('stroke-linecap','round');
+ if(kind==='desk'||kind==='state')g.innerHTML='<circle cx="0" cy="-5" r="5"/><path d="M-10 10c1-7 5-10 10-10s9 3 10 10"/>';
+ else if(kind==='question'||kind==='exam')g.innerHTML='<rect x="-7" y="-9" width="14" height="18" rx="2"/><path d="M-4 -2h8M-4 3h8"/>';
+ else if(kind==='resource')g.innerHTML='<path d="M0-9v18M-7-4h14"/>';
+ else if(kind==='skill')g.innerHTML='<path d="M-9 2l5-7 4 4 6-8M4-9h5v5"/>';
+ else if(kind==='spec')g.innerHTML='<rect x="-8" y="-7" width="7" height="7"/><rect x="2" y="0" width="7" height="7"/><path d="M-1 0H2M-4 4H2"/>';
+ else if(kind==='risk')g.innerHTML='<path d="M0-10l9 18H-9z"/><path d="M0-4v6M0 6v1"/>';
+ else g.innerHTML='<circle cx="0" cy="0" r="6"/><path d="M-9 0h18M0-9v18"/>';
+ return g;
+}
+
+function visibleRelations(){const ids=new Set(nodes.map(n=>n.id)); return relations.filter(r=>ids.has(r[0])&&ids.has(r[1]));}
+function edgeClass(rel){return rel==='related'?'secondary':(rel==='evidence'?'evidence':(rel==='tests'||rel==='assessment'||rel==='assessed'?'tests':''));}
+function drawStatic(){
+ edgeG.innerHTML=''; nodeG.innerHTML=''; animG.innerHTML='';
+ const outer=document.createElementNS(NS,'ellipse'); outer.setAttribute('cx',720);outer.setAttribute('cy',420);outer.setAttribute('rx',510);outer.setAttribute('ry',310);outer.setAttribute('fill','none');outer.setAttribute('stroke','#d0cec7');outer.setAttribute('stroke-width','1');edgeG.appendChild(outer);
+ const note=document.createElementNS(NS,'ellipse'); note.setAttribute('cx',720);note.setAttribute('cy',415);note.setAttribute('rx',84);note.setAttribute('ry',62);note.setAttribute('fill','#fbfaf6');note.setAttribute('stroke','#dedbd2');note.setAttribute('stroke-width','1');edgeG.appendChild(note);
+ const nt=document.createElementNS(NS,'text');nt.setAttribute('x',720);nt.setAttribute('y',420);nt.setAttribute('text-anchor','middle');nt.setAttribute('font-size','10');nt.setAttribute('fill','#81878a');nt.textContent='LEARNING NOTES';edgeG.appendChild(nt);
+ for(const r of visibleRelations()){const [a,b,rel]=r;const p=nodesBy().get(a),q=nodesBy().get(b);const l=document.createElementNS(NS,'line');l.setAttribute('x1',p.x);l.setAttribute('y1',p.y);l.setAttribute('x2',q.x);l.setAttribute('y2',q.y);l.setAttribute('class','edge '+edgeClass(rel));l.dataset.a=a;l.dataset.b=b;l.dataset.rel=rel;edgeG.appendChild(l)}
+ for(const n of nodes){drawNode(n)}
+ redrawPositions();
+}
+function drawNode(n){
+ const g=document.createElementNS(NS,'g');g.setAttribute('class','node');g.dataset.id=n.id;
+ const halo=document.createElementNS(NS,'circle');halo.setAttribute('class','halo');halo.setAttribute('cx',n.x);halo.setAttribute('cy',n.y);halo.setAttribute('r',n.r+10);halo.setAttribute('stroke',n.c);g.appendChild(halo);
+ if(n.review){const p=document.createElementNS(NS,'circle');p.setAttribute('class','pulse');p.setAttribute('cx',n.x);p.setAttribute('cy',n.y);p.setAttribute('r',n.r+8);p.setAttribute('stroke',n.c);g.appendChild(p)}
+ const ring=document.createElementNS(NS,'circle');ring.setAttribute('class','ring');ring.setAttribute('cx',n.x);ring.setAttribute('cy',n.y);ring.setAttribute('r',n.r);ring.setAttribute('stroke',n.c);g.appendChild(ring);
+ if(n.kind==='desk'){const inner=document.createElementNS(NS,'circle');inner.setAttribute('cx',n.x);inner.setAttribute('cy',n.y);inner.setAttribute('r',Math.max(8,n.r*.68));inner.setAttribute('fill','none');inner.setAttribute('stroke',n.c);inner.setAttribute('stroke-width','1');inner.setAttribute('opacity','.35');g.appendChild(inner)}
+ g.appendChild(icon(n.kind,n.x,n.y,n.c,Math.max(.72,n.r/31)));
+ const kindLabel=document.createElementNS(NS,'text');kindLabel.setAttribute('class','kindLabel');kindLabel.setAttribute('x',n.x);kindLabel.setAttribute('y',n.y+n.r+9);kindLabel.setAttribute('text-anchor','middle');kindLabel.textContent=n.type;g.appendChild(kindLabel);
+ const label=document.createElementNS(NS,'text');label.setAttribute('class','label');label.setAttribute('x',n.x);label.setAttribute('y',n.y+n.r+23);label.setAttribute('text-anchor','middle');label.textContent=n.label;g.appendChild(label);
+ g.addEventListener('pointerdown',e=>startNodeDrag(n,e));
+ g.addEventListener('pointerenter',()=>setHover(n.id));
+ g.addEventListener('pointerleave',()=>{if(!state.drag)setHover(null)});
+ g.addEventListener('dblclick',e=>{e.preventDefault();expandNode(n.id);});
+ nodeG.appendChild(g);
+}
+function redrawPositions(){
+ const nm=nodesBy();
+ nodeG.querySelectorAll('.node').forEach(el=>{const n=nm.get(el.dataset.id); if(!n)return; const halo=el.querySelector('.halo'),ring=el.querySelector('.ring'),pulse=el.querySelector('.pulse'),label=el.querySelector('.label'),kindLabel=el.querySelector('.kindLabel'),ico=el.querySelector('g'); halo.setAttribute('cx',n.x);halo.setAttribute('cy',n.y);halo.setAttribute('r',n.r+9);ring.setAttribute('cx',n.x);ring.setAttribute('cy',n.y);ring.setAttribute('r',n.r);if(pulse){pulse.setAttribute('cx',n.x);pulse.setAttribute('cy',n.y)}label.setAttribute('x',n.x);label.setAttribute('y',n.y+n.r+23);kindLabel.setAttribute('x',n.x);kindLabel.setAttribute('y',n.y+n.r+9);ico.setAttribute('transform',`translate(${n.x},${n.y}) scale(${Math.max(.72,n.r/31)})`)});
+ edgeG.querySelectorAll('.edge').forEach(l=>{const a=nm.get(l.dataset.a),b=nm.get(l.dataset.b);if(a&&b){l.setAttribute('x1',a.x);l.setAttribute('y1',a.y);l.setAttribute('x2',b.x);l.setAttribute('y2',b.y)}});
+ applyTransform();
+}
+
+function applyTransform(){root.setAttribute('transform',`translate(${state.tx} ${state.ty}) scale(${state.scale})`)}
+function centerOn(n,zoom=1.65,duration=650){const targetX=W/2,targetY=H/2;const sx=state.tx,sy=state.ty,ss=state.scale;const ex=targetX-n.x*zoom,ey=targetY-n.y*zoom,es=Math.min(2.6,Math.max(.45,zoom));const t0=performance.now();function step(t){const p=Math.min(1,(t-t0)/duration),e=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;state.tx=sx+(ex-sx)*e;state.ty=sy+(ey-sy)*e;state.scale=ss+(es-ss)*e;applyTransform();if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
+
+function neighbors(id){return new Set(visibleRelations().flatMap(r=>r[0]===id?[r[1]]:r[1]===id?[r[0]]:[]))}
+function refreshEmphasis(){const sel=state.selected,hov=state.hovered,focus=hov||sel;const near=focus?neighbors(focus):new Set();nodeG.querySelectorAll('.node').forEach(el=>{const id=el.dataset.id;el.classList.toggle('dim',!!focus&&id!==focus&&!near.has(id));el.classList.toggle('near',!focus||id===focus||near.has(id));el.classList.toggle('selected',id===sel);el.classList.toggle('hovered',id===hov);const label=el.querySelector('.label');label.classList.toggle('dim',!!focus&&id!==focus&&!near.has(id))});edgeG.querySelectorAll('.edge').forEach(l=>{const active=focus&&(l.dataset.a===focus||l.dataset.b===focus);l.classList.toggle('active',!!active);l.classList.toggle('dim',!!focus&&!active&&!near.has(l.dataset.a)&&!near.has(l.dataset.b))})}
+function setHover(id){state.hovered=id;refreshEmphasis();const n=id?nodesBy().get(id):null;if(n&&!state.selected){document.getElementById('status').textContent=`${n.type} · ${n.label} · ${n.m!=null?n.m+'% mastery':''}`.replace(' · ',' · ').trim()}else if(!id&&!state.selected){document.getElementById('status').textContent='scroll to zoom · drag canvas to pan · drag nodes to reposition · click to focus · double-click to expand · Esc clears'}}
+function selectNode(id){const n=nodesBy().get(id);if(!n)return;state.selected=id;openPanel(n);centerOn(n,1.38,620);refreshEmphasis();animateActivity(n.id)}
+function openPanel(n){document.getElementById('panel').classList.add('show');document.getElementById('p-title').textContent=n.label;document.getElementById('p-type').textContent=n.type;document.getElementById('p-mastery').textContent=n.m!=null?n.m+'%':'—';document.getElementById('p-bar').style.width=(n.m||0)+'%';document.getElementById('p-review').textContent=n.review||'Not due';document.getElementById('p-importance').textContent=n.importance||'—';const links=visibleRelations().filter(r=>r[0]===n.id||r[1]===n.id).map(r=>{const other=nodesBy().get(r[0]===n.id?r[1]:r[0]);return `<div>${other?other.label:'?'} <span style="color:#8a9094">· ${r[2]}</span></div>`}).join('');document.getElementById('p-links').innerHTML=links||'<div>No direct relationships.</div>';let why='';if(n.review==='Due'||n.review==='Active')why='This area needs attention based on the learner-state overlay.';else if(n.m!=null&&n.m>=85)why='Strong current mastery. This node can act as a prerequisite anchor.';else why='Use the connected prerequisite and assessment relationships to guide the next step.';document.getElementById('p-why').textContent=why}
+function clearFocus(){state.selected=null;state.hovered=null;document.getElementById('panel').classList.remove('show');refreshEmphasis()}
+
+document.getElementById('close').onclick=clearFocus;
+
+function expandNode(id){
+ const map=hidden[id];if(!map||!map.length)return;
+ for(const n of map){if(!nodes.find(x=>x.id===n.id)){const parent=nodesBy().get(id);const nn={...n,x:parent?parent.x:n.x,y:parent?parent.y:n.y,vx:0,vy:0,spawn:performance.now(),targetX:n.x,targetY:n.y};nodes.push(nn);setTimeout(()=>{if(nn.spawn){nn.targetX=n.x;nn.targetY=n.y}},0)}}
+ if(id==='unit')relations.push(['deriv','kinetics','prerequisite'],['deriv','rates','supports'],['question','deriv','tests']);
+ if(id==='stoich')relations.push(['stoich','conc','supports']);
+ if(id==='equil')relations.push(['equil','lechat','contains']);
+ drawStatic(); selectNode(id); document.getElementById('status').textContent='Expanded neighborhood · double-click another node to reveal more';setTimeout(()=>document.getElementById('status').textContent='scroll to zoom · drag canvas to pan · drag nodes to reposition · click to focus · double-click to expand · Esc clears',1800)}
+
+function animateActivity(id){const rel=visibleRelations().filter(r=>r[0]===id||r[1]===id);for(const r of rel.slice(0,3)){const a=nodesBy().get(r[0]),b=nodesBy().get(r[1]);const c=document.createElementNS(NS,'circle');c.setAttribute('r','3');c.setAttribute('class','activity');animG.appendChild(c);let t=0;function step(){t+=.02;const x=a.x+(b.x-a.x)*t,y=a.y+(b.y-a.y)*t;c.setAttribute('cx',x);c.setAttribute('cy',y);if(t<1)requestAnimationFrame(step);else c.remove()}step()}}
+
+// gentle idle micro-motion around learner/attention nodes, without changing topology
+setInterval(()=>{const focus=state.hovered||state.selected;if(focus)return;for(const id of ['risk','me']){const n=nodesBy().get(id);if(!n)continue;const ox=n.x,oy=n.y; n.x+=Math.sin(performance.now()/700+(id==='risk'?1:2))*.12; n.y+=Math.cos(performance.now()/900+(id==='risk'?2:1))*.08; if(Math.abs(n.x-ox)+Math.abs(n.y-oy))redrawPositions()}},45);
+setInterval(()=>{for(const [a,b] of [['question','spec'],['me','equil'],['kinetics','skill']]){if(nodesBy().has(a)&&nodesBy().has(b))animateActivity(a)}},3600);
+
+// OpenHuman-style sparse force layout.
+// The important difference from the old prototype is that nodes keep a soft
+// pull toward their semantic home positions while a much stronger Coulomb
+// repulsion and longer relationship springs prevent the scene collapsing into
+// one dense clump. Existing positions are therefore the initial composition,
+// not something the simulation immediately destroys.
+let simRunning=true;
+const LAYOUT_ANCHOR={subject:[1180,390],unit:[820,170],atomic:[585,135],bonding:[865,135],moles:[1110,240],stoich:[1120,410],equil:[1010,610],kinetics:[710,625],acids:[430,565],enthalpy:[330,350],spec:[1280,485],question:[1165,105],exam:[1010,110],skill:[235,515],resource:[205,230],risk:[1260,690],me:[610,715]};
+for(const n of nodes){const a=LAYOUT_ANCHOR[n.id];if(a){n.homeX=a[0];n.homeY=a[1];}n.vx=n.vx||0;n.vy=n.vy||0;}
+function physicsTick(){
+ if(!simRunning||state.drag)return;
+ let energy=0;
+ const nm=nodesBy(); const rels=visibleRelations();
+ // Strong, distance-limited repulsion.
+ for(let i=0;i<nodes.length;i++){
+   const a=nodes[i]; if(a.fx!=null)continue; a.vx??=0;a.vy??=0;
+   for(let j=i+1;j<nodes.length;j++){
+     const b=nodes[j]; if(b.fx!=null)continue;
+     let dx=a.x-b.x,dy=a.y-b.y; const d2=dx*dx+dy*dy+160; const d=Math.sqrt(d2);
+     const f=18000/d2; const fx=(dx/d)*f,fy=(dy/d)*f;
+     a.vx+=fx;a.vy+=fy;b.vx-=fx;b.vy-=fy;
+   }
+   // Soft semantic anchor: preserves the intentionally broad composition.
+   const hx=a.homeX??W/2,hy=a.homeY??H/2;
+   a.vx+=(hx-a.x)*0.0018; a.vy+=(hy-a.y)*0.0018;
+ }
+ // Longer springs create the open, diagrammatic spacing seen in the reference.
+ for(const [sa,tb,rel] of rels){
+   const a=nm.get(sa),b=nm.get(tb);if(!a||!b)continue;
+   const dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy)+.001;
+   let want = rel==='contains'?150 : rel==='prerequisite'?180 : rel==='supports'?205 : rel==='related'?220 : rel==='tests'?190 : rel==='assessment'?210 : 200;
+   const f=(d-want)*0.0021; const fx=dx/d*f,fy=dy/d*f;
+   if(a.fx==null){a.vx+=fx;a.vy+=fy} if(b.fx==null){b.vx-=fx;b.vy-=fy}
+ }
+ // Very gentle global centering so the graph stays on-canvas without losing its shape.
+ for(const n of nodes){
+   if(n.fx!=null){n.x=n.fx;n.y=n.fy;continue}
+   n.vx*=0.84;n.vy*=0.84; n.x+=n.vx;n.y+=n.vy;
+   if(n.spawn){const p=Math.min(1,(performance.now()-n.spawn)/520);const e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;n.x+=(n.targetX-n.x)*e*.08;n.y+=(n.targetY-n.y)*e*.08;if(p>=1)delete n.spawn;}
+   // Wide bounds, deliberately larger than the visible canvas.
+   n.x=Math.max(35,Math.min(W-35,n.x)); n.y=Math.max(65,Math.min(H-65,n.y));
+   energy+=Math.abs(n.vx)+Math.abs(n.vy);
+ }
+ redrawPositions();
+ if(energy<0.7)simRunning=false; else requestAnimationFrame(physicsTick);
+}
+requestAnimationFrame(physicsTick);
+
+// pan/zoom + drag semantics
+svg.addEventListener('wheel',e=>{e.preventDefault();const rect=svg.getBoundingClientRect();const mx=(e.clientX-rect.left)/rect.width*W,my=(e.clientY-rect.top)/rect.height*H;const old=state.scale;const next=Math.max(.35,Math.min(3.2,old*Math.exp(-e.deltaY*.0015)));state.tx=mx-(mx-state.tx)*(next/old);state.ty=my-(my-state.ty)*(next/old);state.scale=next;applyTransform()},{passive:false});
+svg.addEventListener('pointerdown',e=>{if(e.target!==svg)return;state.drag={kind:'pan',x:e.clientX,y:e.clientY,tx:state.tx,ty:state.ty,moved:false};svg.setPointerCapture?.(e.pointerId);svg.classList.add('grabbing');simRunning=false});
+function startNodeDrag(n,e){e.stopPropagation();state.drag={kind:'node',id:n.id,x:e.clientX,y:e.clientY,ox:n.x,oy:n.y,moved:false};svg.setPointerCapture?.(e.pointerId);svg.classList.add('grabbing');simRunning=false}
+svg.addEventListener('pointermove',e=>{const d=state.drag;if(!d)return;if(d.kind==='pan'){if(Math.abs(e.clientX-d.x)+Math.abs(e.clientY-d.y)>3)d.moved=true;state.tx=d.tx+(e.clientX-d.x);state.ty=d.ty+(e.clientY-d.y);applyTransform();return}if(d.kind==='node'){const rect=svg.getBoundingClientRect();const dx=(e.clientX-d.x)/rect.width*W/state.scale,dy=(e.clientY-d.y)/rect.height*H/state.scale;if(Math.abs(dx)+Math.abs(dy)>2)d.moved=true;const n=nodesBy().get(d.id);if(n){n.x=d.ox+dx;n.y=d.oy+dy;redrawPositions()}}});
+svg.addEventListener('pointerup',e=>{const d=state.drag;if(!d)return;state.drag=null;svg.classList.remove('grabbing');if(d.kind==='node'&&!d.moved){selectNode(d.id)};simRunning=true;requestAnimationFrame(physicsTick)});
+svg.addEventListener('pointerleave',()=>{if(!state.drag)state.hovered=null;refreshEmphasis()});
+
+function zoomBy(f){const cx=W/2,cy=H/2,old=state.scale,next=Math.max(.35,Math.min(3.2,old*f));state.tx=cx-(cx-state.tx)*(next/old);state.ty=cy-(cy-state.ty)*(next/old);state.scale=next;applyTransform()}
+document.getElementById('zin').onclick=()=>zoomBy(1.25);document.getElementById('zout').onclick=()=>zoomBy(.8);document.getElementById('reset').onclick=()=>{state.tx=0;state.ty=0;state.scale=1;state.selected=null;state.hovered=null;document.getElementById('search').value='';document.getElementById('panel').classList.remove('show');simRunning=true;applyTransform();requestAnimationFrame(physicsTick);refreshEmphasis()};
+document.getElementById('focusMe').onclick=()=>{const me=nodesBy().get('me');if(me)centerOn(me,1.7,620)};
+window.addEventListener('keydown',e=>{if(e.key==='Escape')clearFocus();if(e.key===' '){e.preventDefault();document.getElementById('reset').click()}});
+
+// Search = progressive focus, not a separate page.
+const search=document.getElementById('search');search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();if(!q){refreshEmphasis();return}const matches=nodes.filter(n=>n.label.toLowerCase().includes(q)||n.type.toLowerCase().includes(q));if(matches.length){state.hovered=matches[0].id;refreshEmphasis();centerOn(matches[0],1.34,520)}});
+
+document.querySelectorAll('.mode').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.mode').forEach(x=>x.classList.remove('active'));btn.classList.add('active');state.mode=btn.dataset.mode;applyMode(state.mode)}));
+function applyMode(mode){for(const n of nodes){n._ox??=n.x;n._oy??=n.y;if(mode==='progress'&&(n.review||n.m<65)){n.x+=(720-n.x)*.12;n.y+=(420-n.y)*.12}else if(mode==='question'&&['question','spec','stoich','moles'].includes(n.id)){n.x+=(980-n.x)*.15;n.y+=(390-n.y)*.15}else if(mode==='curriculum'&&['unit','atomic','bonding','moles'].includes(n.id)){n.x+=(720-n.x)*.08;n.y+=(420-n.y)*.08}else if(mode==='knowledge'&&['kinetics','equil','acids','enthalpy','bonding','stoich'].includes(n.id)){n.x+=(760-n.x)*.08;n.y+=(420-n.y)*.08}}simRunning=true;requestAnimationFrame(physicsTick);redrawPositions();}
+
+// action buttons communicate intent for the prototype
+for(const id of ['learnBtn','practiceBtn','tutorBtn'])document.getElementById(id).onclick=()=>{document.getElementById('status').textContent=document.getElementById(id).textContent+' action linked from focused node';setTimeout(()=>document.getElementById('status').textContent='scroll to zoom · drag canvas to pan · drag nodes to reposition · click to focus · double-click to expand · Esc clears',1400)};
+
+drawStatic(); applyTransform(); refreshEmphasis();
+</script>
+</body>
+</html>
