@@ -2,8 +2,8 @@
 
 **User:** Anonymous  
 **Created:** 9/6/2026 22:31:10  
-**Updated:** 9/17/2026 13:33:43  
-**Exported:** 9/17/2026 13:36:43  
+**Updated:** 9/17/2026 18:26:56  
+**Exported:** 9/17/2026 19:11:49  
 **Link:** [https://chatgpt.com/g/g-p-6aa8199e0b108191b392f8ce4526e7d7/c/6a9d9532-b7d8-83ee-b470-8b567dd6ec09](https://chatgpt.com/g/g-p-6aa8199e0b108191b392f8ce4526e7d7/c/6a9d9532-b7d8-83ee-b470-8b567dd6ec09)  
 
 ## Prompt:
@@ -18482,6 +18482,2929 @@ Still not loading
 > Worked for 36s
 
 It seems like I can’t do more advanced data analysis right now. Please try again later.
+
+## Prompt:
+9/17/2026, 1:46:35 PM
+
+Here is fixed version by claude.
+And also give me a list of all the features of openhuman that has not been implemented. (give detailed description about those feautures, how they work etc. and also if it is relevant for syllabAi or not. If relevant how etc
+
+[Attachment: syllabai-openhuman-edexcel-chemistry-v72-intervention-practice-reassess-FIXED.html]
+
+## Response:
+9/17/2026, 1:46:46 PM
+
+> **Compared OpenHuman and SyllabAI while designing a Java evidence graph application**
+>
+> 
+>
+> **Searched 1 website**
+>
+> 
+>
+> **Searching for the Missing Fixed Version File**
+>
+> 
+>
+> Worked for 22s
+
+Yes. I’ll treat the **Claude-fixed v72 as the current prototype baseline**, rather than the broken v72 I generated earlier. The important point is that the Claude audit you supplied is now the stronger runtime evidence for v71/v72 behavior.
+
+I also re-checked the OpenHuman material against the current project research and the current OpenHuman/TinyAgents documentation. There is a fairly large set of OpenHuman capabilities that we **have not implemented in the SyllabAI prototype**. Some are highly relevant; others should deliberately remain outside SyllabAI.
+
+The key distinction is:
+
+> **“Not implemented” does not mean “should implement.”**
+
+OpenHuman is a personal-AI operating environment. SyllabAI is an educational system with authoritative curriculum, assessment, learner evidence, diagnosis and intervention. We should borrow architectural mechanisms where they strengthen that loop, not reproduce OpenHuman wholesale.
+
+---
+
+# 1. Current OpenHuman → SyllabAI coverage
+
+Here is the high-level map.
+
+| OpenHuman capability | SyllabAI prototype | Relevance |
+|---|---|---|
+| Interactive knowledge graph | **Implemented extensively** | Very high |
+| Graph focus/navigation | **Implemented** | Very high |
+| Provenance inspection | **Implemented** | Very high |
+| Relationship inspection | **Implemented** | Very high |
+| Learner-state projection | **Implemented** | Very high |
+| Contextual learning path | **Implemented in v70** | Very high |
+| Evidence → priority | **Implemented in v71, audited/fixed in Claude version** | Very high |
+| Intervention → Practice → Reassess | **v72 direction** | Very high |
+| Memory Tree | **Not implemented** | Medium/high, but must be transformed |
+| Source/topic/global memory hierarchy | **Not implemented** | Medium |
+| Persistent editable knowledge workspace | **Not implemented** | Medium |
+| Memory retrieval/recall modes | **Not implemented as OpenHuman-style memory** | High, but SyllabAI has its own retrieval architecture |
+| Memory Diff | **Not implemented** | High |
+| Memory provenance ledger | **Partially implemented conceptually** | Very high |
+| Automatic memory ingestion/sync | **Not implemented** | Medium/high |
+| Entity-indexed memory graph | **Not implemented** | Medium |
+| Goals | **Not implemented as OpenHuman goals** | Medium |
+| Todo/task board | **Not implemented** | Medium |
+| Autonomous goal continuation | **Not implemented** | Low/conditional |
+| Subconscious/background evaluation | **Not implemented** | **High relevance if bounded** |
+| Learning/reflection loop | **Not implemented** | **Very high** |
+| Local AI routing | **Not implemented** | Medium/high |
+| Local embeddings | **Not implemented** | Medium |
+| Local summary-tree generation | **Not implemented** | Medium |
+| Agent workflow graphs | **Not implemented** | **High future relevance** |
+| Durable run/checkpoint state | **Not implemented** | **Very high** |
+| HITL approval/resume | **Not implemented** | **Very high for teacher workflows** |
+| Run Inspector | **Not implemented** | High |
+| Graph execution blueprints | **Not implemented** | High |
+| Typed graph events | **Not implemented** | High |
+| Agent steering | **Not implemented** | Medium/high |
+| Sub-agents/delegation | **Not implemented** | Medium |
+| Parallel graph fan-out | **Not implemented** | Medium |
+| Time travel/checkpoint inspection | **Not implemented** | High for research/debugging |
+| Workflow scheduling | **Not implemented** | Medium |
+| Event-triggered workflows | **Not implemented** | Medium/high |
+| Visual automation canvas | **Not implemented** | Medium |
+| Approval-gated external actions | **Not implemented** | High |
+| Persistent task/run history | **Not implemented** | High |
+| Obsidian vault | **Not implemented** | Low |
+| Personal integrations | **Not relevant** | Low |
+| Gmail/Slack/WhatsApp memory ingestion | **Not relevant to core SyllabAI** | Low |
+| Personal voice/meeting memory | **Not core** | Low/conditional |
+| Desktop/Tauri native shell | **Not relevant** | None |
+| Native OS keychain model | **Not OpenHuman-specific need for SyllabAI** | Low |
+| Offline personal workspace | **Partially relevant** | Medium |
+| Web-search proxy | **Not implemented as OpenHuman feature** | Medium |
+| Automatic model routing | **Partially represented by provider abstraction** | Medium |
+| Provider capability profiles | **Not implemented** | High |
+| Cost/token budgets | **Not implemented in prototype** | High |
+| Tool-call budgets | **Not implemented** | High |
+| Retry/timeout policy | **Not implemented in prototype** | High |
+| Agent execution observability | **Not implemented** | **Very high** |
+
+The rest of this answer goes into the important ones.
+
+---
+
+# 2. Memory Tree
+
+![Image](https://images.openai.com/static-rsc-4/xITUhcuf6gPhrTomVMFRIgKZz1U-be6TLcy-dtZZj1ji4V9lTrz8chwodVj9_-_xmQk7fIApiNpWRdQ1II9wyPtE2vHYEPtQtToTYdNlOLb607PRJQoznN01u9pn7149Lk1jD6WrePfUet0oOfZKkF_1iZ6afiN0VD7fk2FU1Xb8LQLcdRHFBKH1tjyqvzeG?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/ecIObG2BWPO2Ojr0ISb82CeldzhvmD3Hhs9hU-GaHVILy2XHVjaoFqg4_9xY7tTcJ2Sth0ohaDBQVJhroBXrIPJ4gR2O8wwv3tbewr7Tc7_fBY3vSvwzCxyFpZ_0UX2ifAp1gCCxhe9L2gS2BWSviQicQ37S4ypRzOiXZsEQ9PW08Dd1_823Bh2zrDzN8ehU?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/wWtZUpt5VgwudI0-HTeY_nsRjaRrFkPSFzc-ua2eBkMouXh3VU918XU2KBxCLxOYfw8XjIxWgmH7C_5lrFoFURhAXRQuZy6LQuNklVKyI11IqNFAgKbIOqH_nu_9pHxHJ5JktRf5EPCCFUtc6N6hjNaEMUhUQM7DcrT_BU4J8b6G_IK_ZeDJtQhJ8R6DaKUd?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/7oOT1soqt38T3rWUcN7WqbyNkPMh7S9p-dWU1RMzDuwkNOpAe38LhCztE3PT7LNrtDEwSvheCd-JYCXtjH_-G1ZJoWS2Q0xo4nyjdFGAaB1UVSxezgRsSb_y8Id0n0CVKzoHkvJ2DvZwIhUQ5CcaONOy2Z9qdQxe3Kmb8FXA4W14oBDq3mKf0lGrX9yKJs3A?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/jKClN42NPe1UZSfsESUInXBW4IQx7jpfQU46JbnqYd5g9Cy6PyCoazPl4NIf3U8TW4o5EWP-sL7JGsI6nT64-DkpDYDaVtNCS6v_hf8uFJnWG3C9LV816pXfzs1pVsfS_39r-1iOBVoxAnSaPoa1mQQkC9932JkjL5woS0ZQ_Y3ViCXQMySpnY7TqNoQky_g?purpose=fullsize)
+
+OpenHuman's Memory Tree is probably the biggest architectural feature we **haven't borrowed**.
+
+OpenHuman doesn't simply store a flat vector database. Its memory is represented as a hierarchical set of summaries and source/topic/global views. The same underlying chunks can feed multiple summaries and retrieval paths. The resulting Markdown vault is human-readable and editable. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/obsidian-wiki/README.md?utm_source=chatgpt.com))
+
+Conceptually:
+
+```text
+Raw source
+   ↓
+chunks
+   ↓
+source summaries
+   ↓
+topic/entity summaries
+   ↓
+global summaries
+   ↓
+retrieval
+```
+
+The important property is **hierarchical derived memory**, not Markdown itself.
+
+### SyllabAI relevance: HIGH, but don't copy it
+
+SyllabAI already has a stronger authoritative hierarchy:
+
+```text
+Board
+ ↓
+Qualification
+ ↓
+Subject
+ ↓
+CurriculumVersion
+ ↓
+Section
+ ↓
+Topic/SubTopic
+ ↓
+SpecificationPoint
+```
+
+So we **should not replace this with Memory Tree**.
+
+Instead, the useful OpenHuman idea is:
+
+```text
+Canonical curriculum
+       ↓
+validated resources
+       ↓
+evidence segments
+       ↓
+derived summaries
+       ↓
+learner-context summaries
+       ↓
+retrieval
+```
+
+For example:
+
+```text
+SpecificationPoint 2.15
+      │
+      ├── canonical statement
+      ├── revision notes
+      ├── worked examples
+      ├── exam evidence
+      ├── misconception evidence
+      ├── learner evidence
+      └── derived revision summary
+```
+
+The summary is **derived**, never authoritative.
+
+That fits perfectly with the SyllabAI rule that retrieval-derived structures must not become educational truth. `PROJECT_KNOWLEDGE_MAP.md`
+
+### What I would borrow
+
+**PROPOSED: SyllabAI Learning Context Tree**
+
+Not another KG.
+
+A projection:
+
+```text
+SpecificationPoint
+ ├── What this means
+ ├── Key concepts
+ ├── Prerequisites
+ ├── Common misconceptions
+ ├── Validated resources
+ ├── Exam evidence
+ ├── Learner evidence
+ ├── Recent attempts
+ └── Recommended intervention
+```
+
+That could become a very powerful Tutor context object.
+
+---
+
+# 3. Memory Diff
+
+This is more interesting than it initially sounds.
+
+OpenHuman maintains a Git-backed way of understanding **what changed in memory since the previous inspection**. Its memory is therefore not only searchable; it has temporal change semantics. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/obsidian-wiki/README.md?utm_source=chatgpt.com))
+
+SyllabAI currently has:
+
+```text
+learner state
+learning evidence
+review state
+mastery
+misconceptions
+```
+
+but we haven't turned those into a first-class **state-change narrative**.
+
+### Example
+
+Instead of:
+
+> Mastery: 42%
+
+SyllabAI could eventually show:
+
+```text
+Since last review
+
+2 new attempts
+1 misconception signal repeated
+confidence increased 44 → 61
+mastery 42% → 48%
+review overdue by 2 days
+recommended intervention changed:
+Guided practice → targeted misconception intervention
+```
+
+### Relevance: VERY HIGH
+
+This is particularly valuable for:
+
+- learner dashboard;
+- teacher dashboard;
+- Tutor explanations;
+- research analysis;
+- debugging learner-model behavior.
+
+It would also fit the immutable-evidence architecture:
+
+```text
+Evidence events
+      ↓
+Learner model changes
+      ↓
+State diff
+      ↓
+Explainable learner trajectory
+```
+
+This is much more appropriate for SyllabAI than copying OpenHuman's Git memory implementation.
+
+---
+
+# 4. Automatic memory ingestion / sync
+
+OpenHuman automatically keeps its memory fresh from connected sources. Its Memory system has typed source registries, scoping, retrieval, and periodic syncing. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/obsidian-wiki/README.md?utm_source=chatgpt.com))
+
+SyllabAI currently has document ingestion, parser infrastructure and validated resources, but we don't have the equivalent of:
+
+```text
+new source
+ ↓
+detect
+ ↓
+ingest
+ ↓
+normalize
+ ↓
+validate
+ ↓
+index
+ ↓
+update derived representations
+```
+
+### Relevance: HIGH
+
+Especially for:
+
+- teacher-uploaded resources;
+- school handouts;
+- supplementary PDFs;
+- new specification versions;
+- newly acquired past papers.
+
+But there must be a major difference:
+
+OpenHuman can ingest personal memory fairly freely.
+
+SyllabAI must distinguish:
+
+```text
+RAW
+ ↓
+PARSED
+ ↓
+VALIDATED
+ ↓
+CANDIDATE
+ ↓
+APPROVED
+ ↓
+LEARNER-SERVABLE
+```
+
+That follows the current architecture's validation boundary.
+
+---
+
+# 5. Entity-indexed memory
+
+OpenHuman's memory system builds source/topic/entity-oriented views so information can be retrieved around people, projects and entities rather than only chronological documents. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/obsidian-wiki/README.md?utm_source=chatgpt.com))
+
+SyllabAI doesn't currently have an equivalent derived **entity memory layer**.
+
+### For SyllabAI
+
+Potential entities are:
+
+```text
+SpecificationPoint
+Concept
+Misconception
+Question
+QuestionPart
+ExamPaper
+Resource
+Procedure
+Formula
+```
+
+A learner asking:
+
+> "Why do I keep getting these electrolysis questions wrong?"
+
+could resolve:
+
+```text
+learner
+ ↓
+concept
+ ↓
+misconception
+ ↓
+affected SpecificationPoints
+ ↓
+past attempts
+ ↓
+supporting resources
+ ↓
+intervention
+```
+
+### Relevance: VERY HIGH
+
+But again, this should be a **derived retrieval index**, not the canonical KG.
+
+---
+
+# 6. Subconscious loop
+
+This is one of the most interesting OpenHuman ideas.
+
+OpenHuman has moved toward a background "subconscious" loop: a periodic lightweight local-model evaluation of state, memory, tools and environment that decides whether something actually deserves action. It is explicitly designed to avoid blindly running expensive reasoning on every tick. ([GitHub](https://github.com/tinyhumansai/openhuman/issues/145?utm_source=chatgpt.com))
+
+Conceptually:
+
+```text
+background tick
+      ↓
+bounded state snapshot
+      ↓
+cheap evaluator
+      ↓
+"anything important?"
+   ↙          ↘
+ no           yes
+ ↓             ↓
+stop       stronger reasoning
+               ↓
+             action
+```
+
+### SyllabAI relevance: VERY HIGH
+
+But we should call it something educational, e.g.:
+
+**Learner State Review Loop**
+
+Potentially:
+
+```text
+scheduled review
+      ↓
+new learning evidence?
+      ↓
+state changed materially?
+      ↓
+review overdue?
+      ↓
+misconception reinforced?
+      ↓
+recommendation stale?
+      ↓
+teacher intervention warranted?
+```
+
+Only then invoke expensive diagnosis/recommendation.
+
+### Example
+
+A learner does nothing for 5 days.
+
+Don't run a huge LLM workflow.
+
+Instead:
+
+```text
+nightly job
+ ↓
+review schedule
+ ↓
+detect overdue SpecificationPoint
+ ↓
+check latest evidence
+ ↓
+determine whether recommendation is stale
+ ↓
+generate candidate review action
+```
+
+This is extremely compatible with SyllabAI.
+
+---
+
+# 7. Learning / reflection loop
+
+OpenHuman has a background learning/reflection mechanism that consolidates what happened rather than treating every interaction as equally important. Local AI can power these passes. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/model-routing/local-ai.md?utm_source=chatgpt.com))
+
+SyllabAI has learner evidence but currently does not have an equivalent explicit:
+
+```text
+recent evidence
+ ↓
+reflection/consolidation
+ ↓
+pattern detection
+ ↓
+learner-model candidate update
+```
+
+### Relevance: VERY HIGH
+
+This could become:
+
+**Learner Evidence Consolidation**
+
+Example:
+
+```text
+5 recent attempts
+      ↓
+3 errors involving ionic charge
+      ↓
+2 confidence mismatches
+      ↓
+same misconception appears repeatedly
+      ↓
+candidate misconception pattern
+      ↓
+governed learner-model update
+```
+
+Critically:
+
+> Reflection generates **candidate evidence/patterns**, not direct canonical mastery mutation.
+
+That preserves the SyllabAI learner-model invariant.
+
+---
+
+# 8. Local AI
+
+OpenHuman supports optional local AI through Ollama/LM Studio for embeddings, summary-tree generation, reflection, subconscious processing, chat and reasoning. It health-checks local providers and can fall back to remote providers. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/model-routing/local-ai.md?utm_source=chatgpt.com))
+
+SyllabAI does not currently have this.
+
+### Relevance: MEDIUM → HIGH
+
+Useful for:
+
+- local learner-state summarization;
+- teacher-side document preprocessing;
+- privacy-sensitive school data;
+- offline/low-connectivity environments;
+- local embeddings;
+- inexpensive background analysis.
+
+But **not a Cycle-1 requirement**.
+
+Our provider abstraction already has the correct conceptual place for it:
+
+```text
+LlmProvider
+EmbeddingProvider
+Reranker
+VisionProvider
+```
+
+`MASTER_SPEC.md`
+
+So the architecture is already compatible; the capability isn't implemented.
+
+---
+
+# 9. Provider capability profiles
+
+OpenHuman/TinyAgents has a more mature concept of provider capabilities: models/providers expose what they can safely do so runtime middleware can make decisions accordingly. ([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/harness/README.md?utm_source=chatgpt.com))
+
+SyllabAI currently knows things like:
+
+```text
+provider
+model
+```
+
+but not necessarily a formal capability contract:
+
+```text
+supportsVision
+supportsTools
+supportsStructuredOutput
+supportsStreaming
+maxContext
+supportsEmbeddings
+supportsReasoning
+supportsCaching
+costProfile
+```
+
+### Relevance: HIGH
+
+This becomes especially important once SyllabAI has:
+
+- Tutor;
+- Smart Mark;
+- multimodal chemistry;
+- OCR;
+- research evaluation;
+- background diagnosis;
+- local AI.
+
+It prevents code such as:
+
+```text
+"if Gemini then..."
+```
+
+and instead gives:
+
+```text
+if provider.capabilities().vision()
+```
+
+This is worth borrowing.
+
+---
+
+# 10. Durable agent/state graphs
+
+This is probably the **most important OpenHuman/TinyAgents architecture that we haven't implemented**.
+
+The newer graph runtime models agent execution as:
+
+```text
+State
+ ↓
+Node
+ ↓
+Command
+ ↓
+Next Node
+ ↓
+Checkpoint
+```
+
+with:
+
+- typed state;
+- conditional routing;
+- branching;
+- checkpointing;
+- pause/resume;
+- human approval;
+- run records;
+- graph events;
+- inspectable graph definitions;
+- execution blueprints. ([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/harness/state-graph.md?utm_source=chatgpt.com))
+
+This is fundamentally different from our **educational knowledge graph**.
+
+### SyllabAI should have both
+
+```text
+             SyllabAI
+                 │
+       ┌─────────┴─────────┐
+       ↓                   ↓
+Educational KG       Execution Graph
+       │                   │
+curriculum truth      workflow state
+learner context       intervention run
+concept relations     tutor workflow
+assessment           diagnosis workflow
+       │                   │
+       └─────────┬─────────┘
+                 ↓
+           Learning action
+```
+
+This separation is extremely important.
+
+### Relevance: VERY HIGH
+
+I would eventually introduce something like:
+
+**LearningRun / InterventionRun**
+
+Example:
+
+```text
+InterventionRun
+ ├── resolve learner
+ ├── identify evidence
+ ├── diagnose
+ ├── select intervention
+ ├── present intervention
+ ├── collect attempt
+ ├── reassess
+ └── update recommendation
+```
+
+Every node has state and provenance.
+
+That is substantially more valuable to SyllabAI than adding more graph visualization.
+
+---
+
+# 11. Durable checkpoints
+
+OpenHuman's graph runtime persists checkpoints so a workflow can stop and resume later. Checkpoints contain run, step, node, serialized state and timestamp information. ([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/harness/state-graph.md?utm_source=chatgpt.com))
+
+SyllabAI doesn't currently have this as a first-class learning primitive.
+
+### Example
+
+A student starts:
+
+```text
+Intervention
+ ↓
+Tutor explanation
+ ↓
+practice
+```
+
+then leaves.
+
+Later:
+
+```text
+resume intervention
+ ↓
+same learning context
+ ↓
+continue from practice
+```
+
+### Relevance: VERY HIGH
+
+Also useful for:
+
+- teacher review;
+- Smart Mark;
+- long-running mock exams;
+- AI-generated intervention workflows;
+- document processing;
+- research evaluations.
+
+---
+
+# 12. Human-in-the-loop interrupts
+
+OpenHuman/TinyAgents supports explicit graph interruptions and resume commands. ([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/harness/state-graph.md?utm_source=chatgpt.com))
+
+For SyllabAI this is extremely valuable.
+
+Example:
+
+```text
+AI detects possible misconception
+        ↓
+confidence insufficient
+        ↓
+PAUSE
+        ↓
+Teacher review
+        ↓
+approve / reject / modify
+        ↓
+resume
+```
+
+Or:
+
+```text
+AI proposes assessment intervention
+        ↓
+teacher approval required
+        ↓
+assignment created
+```
+
+### Relevance: VERY HIGH
+
+This fits the teacher architecture particularly well because SyllabAI explicitly separates teacher authority from AI inference. `GEMINI_FILE_SEARCH_AND_NOTEBOOK_ARCHITECTURE_RESEARCH.md`
+
+---
+
+# 13. Run Inspector
+
+OpenHuman workflows have a Run Inspector showing each run step, outputs and final status. Workflow runs have persistent history. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/workflows.md?utm_source=chatgpt.com))
+
+SyllabAI currently doesn't have this.
+
+### Imagine:
+
+**Intervention Run #1842**
+
+```text
+✓ Resolve learner
+✓ Resolve SpecificationPoint 2.15
+✓ Retrieve evidence
+✓ Detect ionic-charge misconception
+✓ Select targeted intervention
+✓ Tutor response generated
+→ Waiting for learner attempt
+```
+
+Then:
+
+```text
+Learner attempt received
+✓ Smart Mark
+✓ Evidence extracted
+✓ Learner state update
+→ Recommendation recalculated
+```
+
+### Relevance: VERY HIGH
+
+This should eventually become a debugging and audit surface for the adaptive learning engine.
+
+---
+
+# 14. Graph execution blueprints
+
+OpenHuman separates:
+
+> **what an agent says**
+
+from:
+
+> **how an agent runs**
+
+Its blueprints expose the node/edge topology separately from prompts. ([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/harness/state-graph.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: HIGH
+
+For example:
+
+```text
+Tutor Intervention Blueprint
+
+resolve_context
+       ↓
+retrieve
+       ↓
+evidence_gate
+       ↓
+pedagogical_policy
+       ↓
+generate
+       ↓
+claim_validation
+       ↓
+present
+```
+
+That is much safer than allowing an LLM to invent the entire workflow.
+
+It also aligns strongly with our existing bounded-agent principle.
+
+---
+
+# 15. Typed execution events
+
+TinyAgents/OpenHuman emit events such as:
+
+```text
+graph.run.started
+graph.node.entered
+graph.node.completed
+graph.run.paused
+graph.run.completed
+graph.run.failed
+graph.checkpoint.saved
+graph.resume.started
+graph.resume.completed
+```
+
+([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/harness/state-graph.md?utm_source=chatgpt.com))
+
+SyllabAI already has a research telemetry architecture, but these **execution-level events** are not the same thing as learning events.
+
+### We need both
+
+```text
+Execution telemetry
+       +
+Learning telemetry
+```
+
+For example:
+
+```text
+graph.node.completed
+```
+
+is operational.
+
+Whereas:
+
+```text
+intervention.completed
+question.submitted
+bkt.updated
+```
+
+is educational/research telemetry. The latter are already specified by SyllabAI. `MASTER_SPEC.md`
+
+### Relevance: VERY HIGH
+
+This would make the adaptive system dramatically easier to debug.
+
+---
+
+# 16. Workflow automation
+
+OpenHuman workflows are persistent typed graphs that can be:
+
+- scheduled;
+- triggered by application events;
+- manually run;
+- resumed after approval.
+
+They support nodes such as:
+
+```text
+agent
+tool_call
+HTTP
+code
+condition
+switch
+transform
+split
+merge
+sub-workflow
+```
+
+([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/workflows.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: MEDIUM → HIGH
+
+We shouldn't build a generic Zapier clone.
+
+But a **Learning Workflow Engine** could be valuable.
+
+Example:
+
+```text
+Student becomes review-due
+        ↓
+check recent evidence
+        ↓
+if misconception confidence > threshold
+        ↓
+create targeted practice
+        ↓
+notify learner
+        ↓
+if teacher intervention required
+        ↓
+teacher queue
+```
+
+This is directly connected to the adaptive-learning loop.
+
+---
+
+# 17. Approval gates
+
+OpenHuman workflows have explicit approval gates before external-effect actions. The runtime trigger cannot redefine what actions a workflow is allowed to execute. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/workflows.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: VERY HIGH
+
+Especially for:
+
+- teacher assignments;
+- class interventions;
+- changing learner recommendations;
+- content publication;
+- approving AI-generated assessment material;
+- modifying validated educational resources.
+
+The rule should be:
+
+```text
+AI proposes
+ ↓
+system validates
+ ↓
+human approves when required
+ ↓
+application executes
+```
+
+Not:
+
+```text
+LLM decides → database mutation
+```
+
+This strongly reinforces SyllabAI's existing architecture.
+
+---
+
+# 18. Run history
+
+OpenHuman persists:
+
+```text
+run status
+start time
+finish time
+errors
+approvals
+per-step outputs
+```
+
+([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/workflows.md?utm_source=chatgpt.com))
+
+SyllabAI's learning log is primarily about **learner events**.
+
+We need another layer:
+
+```text
+Learning evidence
+        ≠
+AI execution history
+```
+
+This distinction is already consistent with SyllabAI's evidence architecture.
+
+### Relevance: HIGH
+
+It would allow us to answer:
+
+> Why did SyllabAI recommend this?
+
+not only:
+
+> What did the learner do?
+
+---
+
+# 19. Goal system
+
+OpenHuman has three related levels:
+
+1. durable long-term goals;
+2. a goal for the current conversation;
+3. a task board of concrete work items.
+
+Goals persist and can be reviewed/reflected upon. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/goals-and-todos.md?utm_source=chatgpt.com))
+
+### SyllabAI equivalent
+
+We could eventually have:
+
+```text
+Learner goal
+   ↓
+Curriculum goal
+   ↓
+Learning objectives
+   ↓
+Intervention plan
+   ↓
+Tasks/practice
+```
+
+For example:
+
+> "Prepare for Chemistry Paper 1C in six weeks."
+
+becomes:
+
+```text
+Goal
+ ↓
+coverage gaps
+ ↓
+priority SpecificationPoints
+ ↓
+practice plan
+ ↓
+reassessment
+```
+
+### Relevance: HIGH
+
+But this must remain **learning-goal driven**, not an OpenHuman-style generic productivity goal system.
+
+---
+
+# 20. Todo/task board
+
+OpenHuman's task board supports statuses such as:
+
+```text
+todo
+in_progress
+awaiting_approval
+ready
+blocked
+done
+rejected
+```
+
+and includes objectives, execution plans, acceptance criteria, assigned agents and approval modes. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/goals-and-todos.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: MEDIUM/HIGH
+
+This could become:
+
+**Learning Intervention Board**
+
+For teachers:
+
+```text
+Learner
+ ↓
+identified issue
+ ↓
+intervention
+ ↓
+assignment
+ ↓
+waiting for attempt
+ ↓
+reassess
+```
+
+For AI systems:
+
+```text
+diagnose
+→ retrieve
+→ generate intervention
+→ validate
+→ deliver
+→ reassess
+```
+
+But don't turn SyllabAI into a generic project-management tool.
+
+---
+
+# 21. Autonomous goal continuation
+
+OpenHuman can optionally continue working toward an active goal when a conversation becomes idle. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/goals-and-todos.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: LOW / CONDITIONAL
+
+I would **not** implement autonomous student-facing continuation.
+
+A learning system should not randomly decide:
+
+> "The student hasn't interacted, so I'll start doing things."
+
+Instead:
+
+```text
+review schedule
+ ↓
+due intervention
+ ↓
+notification/recommendation
+```
+
+Autonomous background computation is fine.
+
+Autonomous learner-facing behavior needs explicit product rules.
+
+---
+
+# 22. Web/search integration
+
+OpenHuman has a backend-proxied web-search capability. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/privacy-and-security.md?utm_source=chatgpt.com))
+
+SyllabAI doesn't have an equivalent OpenHuman search layer.
+
+### Relevance: MEDIUM
+
+Potentially useful for:
+
+- current scientific context;
+- examiner updates;
+- supplementary educational material;
+- teacher research.
+
+But the Tutor should **not** treat arbitrary web search as curriculum truth.
+
+The architecture should remain:
+
+```text
+Official curriculum
+   ↓
+validated SyllabAI content
+   ↓
+web evidence as supplementary evidence
+```
+
+not:
+
+```text
+Google → educational truth
+```
+
+---
+
+# 23. Offline-first workspace
+
+OpenHuman keeps its Memory Tree and Markdown vault locally accessible even when the network is unavailable. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/privacy-and-security.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: MEDIUM
+
+Potential future use:
+
+- cached revision resources;
+- downloaded past papers;
+- offline practice;
+- local learner state;
+- local Tutor fallback.
+
+But SyllabAI is currently designed as a web application with a Java backend, so reproducing OpenHuman's desktop-local architecture would be excessive.
+
+---
+
+# 24. Voice / multimodal interaction
+
+OpenHuman has voice/audio-related capabilities and local/cloud routing for vision and other modalities. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/model-routing/local-ai.md?utm_source=chatgpt.com))
+
+SyllabAI's full specification already identifies multimodal intelligence as a later build wave, including handwriting/image inputs and visual explanations. `MASTER_SPEC.md`
+
+### Relevance: HIGH eventually
+
+Particularly useful for:
+
+- handwritten chemistry answers;
+- chemical structures;
+- graphs;
+- apparatus diagrams;
+- equation interpretation;
+- spoken revision.
+
+But this is **not the next graph feature**.
+
+---
+
+# 25. Privacy/local processing controls
+
+OpenHuman has an explicit distinction between:
+
+```text
+local memory
+local models
+cloud model calls
+backend-brokered integrations
+```
+
+and makes local AI opt-in. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/privacy-and-security.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: HIGH eventually
+
+Especially because SyllabAI may handle:
+
+- minors;
+- student learning records;
+- school data;
+- teacher data;
+- assessment history.
+
+We already have privacy/security requirements in the Master Spec, including consent, RBAC, minimum telemetry and retention controls. `MASTER_SPEC.md`
+
+The OpenHuman lesson is mainly:
+
+> Make data locality and processing routing explicit.
+
+---
+
+# 26. Token/cost budgets
+
+TinyAgents' runtime can track:
+
+- prompt tokens;
+- completion tokens;
+- cached tokens;
+- model prices;
+- run-level cost;
+- token budgets;
+- dollar budgets.
+
+([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/harness/README.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: VERY HIGH
+
+Especially for:
+
+```text
+Tutor
+Smart Mark
+diagnostic
+recommendation
+research evaluation
+background learning review
+```
+
+A future intervention run should be able to say:
+
+```text
+Budget: 20k tokens
+Used: 7.8k
+Remaining: 12.2k
+```
+
+and terminate safely.
+
+This is particularly important under the project's free-tier constraint.
+
+---
+
+# 27. Tool-call limits, retries and timeouts
+
+The OpenHuman/TinyAgents harness explicitly controls:
+
+- model-call limits;
+- tool-call limits;
+- concurrency;
+- timeout;
+- retries;
+- recursion;
+- cancellation.
+
+([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/harness/README.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: VERY HIGH
+
+Our bounded-agent principle requires exactly this.
+
+For example:
+
+```text
+Tutor agent
+max 3 retrieval calls
+max 2 reranker calls
+max 1 generation retry
+10s retrieval timeout
+30s total budget
+```
+
+Without this, "agentic Tutor" can become an uncontrolled loop.
+
+---
+
+# 28. Human steering
+
+TinyAgents supports parent/human steering of:
+
+- orchestrators;
+- sub-agents;
+- graph tasks;
+- harness loops.
+
+([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/harness/README.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: HIGH
+
+Teacher could potentially intervene:
+
+```text
+AI diagnosis:
+  "possible misconception"
+
+Teacher:
+  reject diagnosis
+
+Teacher:
+  "treat as confidence issue instead"
+
+Run:
+  resumes with teacher override
+```
+
+That would be much better than a teacher merely seeing a final AI-generated label.
+
+---
+
+# 29. Parallel fan-out
+
+The graph runtime supports dynamic fan-out / `Send`-style execution, useful for parallel search, scoring and map-reduce. ([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/graph/routing.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: MEDIUM/HIGH
+
+Example:
+
+```text
+Learner question
+      ↓
+ ┌────┼────┬─────┐
+ ↓    ↓    ↓     ↓
+KG   BM25 vector evidence
+      ↓
+ parallel results
+      ↓
+ fusion
+```
+
+Interestingly, this could eventually become part of the **Educational Retrieval Engine**.
+
+But we don't need a generic agent graph just to implement parallel retrieval.
+
+---
+
+# 30. Time travel / state inspection
+
+The newer graph architecture supports state inspection, history, forks and time-travel-style debugging when checkpointing is enabled. ([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/graph/README.md?utm_source=chatgpt.com))
+
+### SyllabAI relevance: HIGH
+
+Imagine debugging:
+
+```text
+Learner state at T0
+      ↓
+attempt
+      ↓
+diagnosis
+      ↓
+intervention
+      ↓
+T1
+```
+
+and being able to inspect exactly why:
+
+```text
+mastery changed
+misconception probability changed
+recommendation changed
+```
+
+This is particularly valuable for research reproducibility.
+
+---
+
+# 31. Graph visualization of execution
+
+OpenHuman/TinyAgents exposes graph structure for visualization, tests and generated documentation. ([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/graph/README.md?utm_source=chatgpt.com))
+
+This is distinct from our **educational KG visualization**.
+
+We currently have:
+
+```text
+Curriculum graph
+```
+
+We eventually need:
+
+```text
+Learning execution graph
+```
+
+For example:
+
+![Image](https://images.openai.com/static-rsc-4/BCu6whdtsaNr41LR9hn90r_I3ofyvjYt7PfQyozHvtiq0440IeXGa9c9XJ1mPHsVOoa6LhmCpQaFmBj-QSRjXvJitDkbDA0tPK-hPwgpBAZMdD9Do-y_xsmMzyzpsUON8ezbyaRSxVaudAjsrthhBNZOB1FnnCjFqVXtI3CS7r1G1X1y0A-xFoTriUgt26Hq?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/dmiwf0utIQ30dB3uHmDOlK3bNgsSxMZvZNE-qF1p7NBC0c2NkrB2xyFT_J9mw7zPRqbwSBxJIY6RCqY4LGHQHXhGh7f_cEf2tTbnO11PSZNHL_Hhr_anFvHSRpTrTA2DgA8zlqjzKGy6X6u-9ez5Ty-CuTsVF7Ag-bvX66OwQPdEfhXc-7S1zvhG1b3YMAL8?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/TIZVH_guesAFKjTxYgh0rj2xXWebLBoUBRg00g0T4ftKuxtTGFmoJv9pmNM_KVw2Rk2ynr3sJtA9JGCNyXReIz1R6S7RT4bO6XzkDT34wGQrwnC_MjKlx-tKNQ_FVNe3hqb29CmrRCDpZAQ7IjW_Qs8vUQbofbOOxmye0-5pGdHJRsGNMxMPcmhz8n6FzC0d?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/2d_-GdPipCr_jR3dJjCCknE4WAZXYxAleID04xHqc93uzxAdgfTVRfdl4xyR-7d4m7XC0w5B7SxBRY5MCW8CrkYDUwzGqlon-cGcLIsrSdWrMF0FNrKnLbru8FTaLqIZEqKOP4l4Ot2xDLNoFUIkVZTpVvmyfHDi0dXw5VIGnV1ZliyWIl9zcfQCMYU_ZhOE?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/JpO3Wz0oQhnw0JT3BlckaZovHgh-PRxbC_ne1qaH7Fv6m_si01GnjYD2OnmUwVTSvj8QEZb3pF_SKT3TPChiD1yQuda6K08Ni5gM-rlOm0EJ6vQSMlyCYp0JmBFEOqvV8zlwT3CwLZ77kZUzTyJECj4MfL55rh1lU3ptFEr8Zg4tNVlwfDRG8xUnnDsU8RzY?purpose=fullsize)
+
+![Image](https://images.openai.com/static-rsc-4/wiSKyxOKbKDyDmiaCXv7oQhuOgiyn6VYyyCSac5Wb-tPpB3YHRG76IX5LeNT_j0n9AZNEB49mBReGI3pZUlIRAwyau3zhWX-ilUskPZpPwCrWt4NygkKWgPqpSSzRDnL3dnq3k0uSybyNQBwquPv3v5cPmcn5WI88jPsye-fCHUAWnkt53NJXGQMIfzCEdKX?purpose=fullsize)
+
+```text
+Resolve
+   ↓
+Evidence
+   ↓
+Diagnose
+   ↓
+Intervene
+   ↓
+Practice
+   ↓
+Assess
+   ↓
+Update
+```
+
+This would be an excellent future SyllabAI developer/teacher diagnostic surface.
+
+---
+
+# 32. What we should deliberately NOT implement
+
+This is just as important.
+
+## OpenHuman personal Memory Tree
+
+**REJECTED as a direct dependency.**
+
+SyllabAI has a stronger educational hierarchy.
+
+Borrow hierarchical derived summaries only.
+
+---
+
+## Obsidian vault
+
+**NOT RELEVANT to core SyllabAI.**
+
+Plain-text export may be useful eventually, but it shouldn't drive architecture.
+
+---
+
+## Gmail / Slack / WhatsApp personal memory
+
+**NOT RELEVANT to the core learning platform.**
+
+Teacher LMS integrations are a different problem.
+
+---
+
+## Tauri/native desktop shell
+
+**NOT RELEVANT.**
+
+SyllabAI is intentionally web-first.
+
+---
+
+## Personal productivity goals
+
+**NOT CORE.**
+
+Learning goals are relevant; generic life goals are not.
+
+---
+
+## OpenHuman's generic automation ecosystem
+
+**DO NOT CLONE.**
+
+Build bounded educational workflows instead.
+
+---
+
+## OpenHuman memory as authoritative truth
+
+**REJECTED.**
+
+This would directly violate the SyllabAI architecture.
+
+---
+
+# 33. The most important missing OpenHuman ideas for SyllabAI
+
+If I compress everything above into the actual SyllabAI roadmap, I would prioritize the missing ideas like this:
+
+### Tier 1 - Extremely valuable
+
+**1. LearningRun / InterventionRun**
+
+```text
+evidence
+ ↓
+diagnosis
+ ↓
+intervention
+ ↓
+practice
+ ↓
+reassessment
+```
+
+Durable, inspectable execution state.
+
+**2. Checkpoints + resume**
+
+Allow long-running learning workflows to pause safely.
+
+**3. Run Inspector**
+
+Show exactly why an adaptive action happened.
+
+**4. Evidence/state diff**
+
+Show:
+
+```text
+what changed
+why it changed
+which evidence caused it
+```
+
+**5. Background Learner State Review**
+
+OpenHuman's subconscious concept adapted into educational state maintenance.
+
+**6. Human approval / teacher override**
+
+Especially for consequential learner interventions.
+
+---
+
+### Tier 2 - Strongly valuable
+
+**7. Learning Context Tree**
+
+OpenHuman Memory Tree idea transformed into a SpecificationPoint-centered evidence context.
+
+**8. Entity-indexed learning retrieval**
+
+Concept → misconception → evidence → resource → intervention.
+
+**9. Provider capability registry**
+
+Model capabilities instead of hardcoded provider logic.
+
+**10. Execution budgets**
+
+Token/tool/time/cost limits.
+
+**11. Typed execution events**
+
+Operational telemetry separate from learning telemetry.
+
+**12. Workflow blueprints**
+
+Make the Tutor/diagnostic/intervention execution topology inspectable.
+
+---
+
+### Tier 3 - Valuable later
+
+**13. Local AI**
+
+Privacy-sensitive/background workloads.
+
+**14. Offline learning**
+
+Cached resources and limited practice.
+
+**15. Parallel retrieval/fan-out**
+
+Potential retrieval-performance improvement.
+
+**16. Time-travel learner-model debugging**
+
+Research/developer capability.
+
+**17. Voice and multimodal learning**
+
+Already aligned with later SyllabAI roadmap.
+
+---
+
+### Tier 4 - Deliberately outside SyllabAI
+
+- personal Memory Tree;
+- Obsidian-first workspace;
+- Gmail/Slack/WhatsApp personal memory;
+- native desktop shell;
+- personal productivity automation;
+- generic life goals;
+- generic Zapier/n8n replacement.
+
+---
+
+# 34. The architectural insight I think matters most
+
+OpenHuman has actually exposed **two different meanings of "graph"** that we should keep separate.
+
+### SyllabAI educational graph
+
+```text
+SpecificationPoint
+Concept
+Prerequisite
+Misconception
+Question
+Resource
+Assessment
+```
+
+This represents **educational truth**.
+
+### OpenHuman-style execution graph
+
+```text
+Resolve
+Retrieve
+Diagnose
+Intervene
+Practice
+Assess
+Update
+```
+
+This represents **what the system is doing**.
+
+They should not become one graph.
+
+Instead:
+
+```text
+                 SyllabAI
+                    │
+        ┌───────────┴───────────┐
+        │                       │
+        ▼                       ▼
+ Educational KG           Execution Graph
+ "What is true?"          "What is happening?"
+        │                       │
+        │                       ├── Run
+        │                       ├── Node
+        │                       ├── State
+        │                       ├── Checkpoint
+        │                       ├── Approval
+        │                       └── Events
+        │
+        └───────────┬───────────┘
+                    ▼
+              Learner Model
+                    │
+                    ▼
+             Learning Action
+```
+
+**That is the OpenHuman lesson I would carry forward most strongly.**
+
+It gives us a clean path from the graph work we've already done into a real adaptive-learning runtime without turning the curriculum graph into an agent workflow graph.
+
+The OpenHuman/TinyAgents documentation explicitly supports this separation: its graph runtime is intended for long-running, inspectable, resumable work, while the generic graph engine is kept separate from the agent harness. ([GitHub](https://github.com/tinyhumansai/tinyagents/blob/main/docs/modules/harness/state-graph.md?utm_source=chatgpt.com))
+
+And importantly, SyllabAI's own architecture already points toward this separation: assessment evidence, learner state, diagnosis, recommendation and telemetry are separate domains rather than one mutable graph. 
+
+**My recommendation:** stop adding purely visual OpenHuman-inspired graph features after the current v72 stabilization. The next genuinely transformative prototype should be the **Execution Graph / LearningRun layer**, because that is where the graph stops being a visualization and starts representing the actual adaptive-learning process.
+
+---
+
+**Sources:**
+
+- [openhuman/gitbooks/features/obsidian-wiki/README.md at main · tinyhumansai/openhuman · GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/obsidian-wiki/README.md?utm_source=chatgpt.com)
+
+## Prompt:
+9/17/2026, 6:06:16 PM
+
+I asked about visual OpenHuman-inspired graph features , and interaction wise features (of the graph)
+
+## Response:
+9/17/2026, 6:26:00 PM
+
+> **Searched 1 website**
+>
+> 
+>
+> Worked for 13s
+
+Yes - you’re right. You were asking a **much narrower question**:
+
+> **Which OpenHuman-inspired features are still missing specifically from SyllabAI’s visual graph and the way a user interacts with that graph?**
+
+Not Memory Tree architecture, agent orchestration, local AI, workflows, etc.
+
+I’d separate the answer into **(A) visual graph capabilities** and **(B) graph interaction capabilities**. Based on the OpenHuman documentation and the SyllabAI v72 progression you described, this is the more relevant gap analysis.
+
+OpenHuman’s documented Brain surface has a force-directed **memory graph of entities and relationships**, alongside search/retrieval and the broader Intelligence UI. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/obsidian-wiki/memory-tree.md?utm_source=chatgpt.com))
+
+---
+
+# 1. What SyllabAI has already borrowed
+
+Your current graph is already substantially beyond a basic OpenHuman-style graph.
+
+### Already implemented
+
+| Capability | SyllabAI |
+|---|---|
+| Force/graph-style spatial visualization | ✅ |
+| Hierarchical curriculum graph | ✅ |
+| Node selection | ✅ |
+| Focus/current-node semantics | ✅ |
+| Pan | ✅ |
+| Zoom | ✅ |
+| Dragging / spatial manipulation | ✅ |
+| Search | ✅ |
+| Search → reveal hidden ancestors | ✅ |
+| Breadcrumb/current location | ✅ |
+| Expand/collapse hierarchy | ✅ |
+| Relationship filtering | ✅ |
+| Relationship inspection | ✅ |
+| Relationship provenance | ✅ |
+| Node → connected-node inspection | ✅ |
+| Keyboard navigation | ✅ |
+| Keyboard activation | ✅ |
+| Command palette | ✅ |
+| Graph ↔ Tree view | ✅ |
+| Tree hierarchy navigation | ✅ |
+| Learner-state overlay | ✅ |
+| Evidence overlay | ✅ |
+| Authority overlay | ✅ |
+| Learning-focus projection | ✅ |
+| Learning-path overlay | ✅ |
+| Teacher Lens | ✅ |
+| Context-aware Learning Path | ✅ |
+| Practice/Tutor/Learn graph actions | ✅ |
+| Accessibility/live-region semantics | ✅ |
+| Current-node ↔ panel focus synchronization | largely ✅ |
+| Relationship keyboard traversal | ✅, with the v71 anchor issue needing verification |
+| Provenance trail | ✅ |
+
+So **I would not describe SyllabAI as missing the basic OpenHuman graph experience**.
+
+The remaining opportunities are more interesting.
+
+---
+
+# 2. Missing visual graph features
+
+## A. Neighbor-degree / local-network exploration
+
+**OpenHuman relevance: high**
+
+The OpenHuman memory graph is fundamentally an entity relationship network: entities become graph nodes and relationships become graph connections. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/obsidian-wiki/memory-tree.md?utm_source=chatgpt.com))
+
+SyllabAI currently has relationship inspection, but there is a difference between:
+
+> “show me this relationship”
+
+and:
+
+> **“show me the local network around this SpecificationPoint.”**
+
+### Potential interaction
+
+Select:
+
+**Rates of reaction**
+
+Then provide:
+
+```text
+                 Collision theory
+                       │
+                       ▼
+                 Rates of reaction
+                  /     |      \
+                 /      |       \
+          temperature  catalysts  concentration
+```
+
+But importantly, the user could choose:
+
+- 1-hop
+- 2-hop
+- 3-hop
+
+and the graph would progressively reveal the neighborhood.
+
+### Why this matters
+
+For SyllabAI, this is more educationally useful than generic graph exploration because it exposes:
+
+**concept → prerequisite → related concept → assessment → misconception → resource**
+
+without forcing the entire curriculum onto the screen.
+
+### Status
+
+**PROPOSED**
+
+---
+
+# 3. “Focus neighborhood” mode
+
+Related, but slightly different.
+
+Instead of merely selecting a node, the graph could transform into:
+
+```text
+                faded
+       ○ ○ ○ ○ ○ ○ ○ ○
+
+             ┌───────┐
+             │ TARGET│
+             └───────┘
+              /  |  \
+             /   |   \
+          ○─────○─────○
+          |     |     |
+        prereq concept assessment
+
+       everything else → strongly faded
+```
+
+You already have **Learning Focus**, but this would be a more general graph interaction:
+
+### `Focus → Local Graph`
+
+The user selects a SpecificationPoint and gets:
+
+- target
+- immediate prerequisites
+- dependent concepts
+- related concepts
+- linked questions
+- relevant revision resources
+
+while everything else becomes contextual background.
+
+This is particularly useful when the full 217-node graph becomes dense.
+
+### Status
+
+**Partially implemented conceptually; full local-neighborhood interaction is still missing.**
+
+---
+
+# 4. “Expand from here” progressive graph exploration
+
+This is probably one of the most useful missing interactions.
+
+Instead of hierarchy expansion only:
+
+> Section → SubTopic → SpecificationPoints
+
+allow **relationship expansion**.
+
+For example:
+
+```text
+[Rates of reaction]
+
+       Expand relationships
+              ↓
+
+[Collision theory]
+[Temperature]
+[Catalyst]
+[Concentration]
+[Required practical]
+[Exam questions]
+```
+
+The graph becomes progressively explorable rather than simply being a pre-existing graph.
+
+### Interaction
+
+Node context menu:
+
+```text
+Explore
+├── Expand children
+├── Show prerequisites
+├── Show related concepts
+├── Show assessments
+├── Show resources
+└── Show learner evidence
+```
+
+This is a genuinely useful OpenHuman-inspired interaction because the graph becomes a **navigation surface**, rather than just a visualization.
+
+### Status
+
+**PROPOSED**
+
+---
+
+# 5. Node “fly-to” / animated navigation
+
+OpenHuman-style graph interfaces commonly benefit from spatial navigation: selecting something causes the viewport to move toward it rather than simply changing state in place.
+
+Your current system has search → reveal ancestors, but the stronger interaction would be:
+
+```text
+Search "electrolysis"
+        ↓
+Reveal path
+        ↓
+Animate viewport
+        ↓
+Center selected node
+        ↓
+Zoom to useful level
+        ↓
+Open contextual panel
+```
+
+This should also work when:
+
+- selecting from Tree
+- selecting from search
+- selecting a Learning Path stage
+- selecting a relationship
+- following a prerequisite
+
+### Why it matters
+
+Without this, a graph can technically reveal a node while leaving the user spatially disoriented.
+
+### Status
+
+**Partially implemented; animation/semantic camera movement could be strengthened.**
+
+---
+
+# 6. Multi-node selection
+
+This is a major interaction opportunity.
+
+Current interaction is essentially:
+
+> one current node.
+
+OpenHuman-style graph exploration can be extended into:
+
+> **a temporary selection set.**
+
+For example:
+
+```text
+☑ Atomic structure
+☑ Electronic configuration
+☑ Ionic bonding
+☑ Covalent bonding
+```
+
+Then:
+
+```text
+4 nodes selected
+
+[Compare] [Practice] [Filter] [Path] [Hide others]
+```
+
+For SyllabAI this could become particularly powerful.
+
+### Example
+
+A teacher selects:
+
+- Atomic structure
+- Isotopes
+- Electronic configuration
+- Periodic trends
+
+and gets:
+
+**Create practice set**
+
+or
+
+**Show class coverage**
+
+without changing the canonical graph.
+
+### Status
+
+**PROPOSED**
+
+---
+
+# 7. Lasso / area selection
+
+This follows naturally from multi-selection.
+
+A teacher could drag around a region:
+
+```text
+      ┌─────────────────────┐
+      │  ●  ●  ●            │
+      │      ●  ●           │
+      │  ●                  │
+      └─────────────────────┘
+```
+
+and select the visible cluster.
+
+This is more valuable in Teacher Lens than Student Lens.
+
+Possible actions:
+
+- Practice selected
+- Assign selected
+- Compare class mastery
+- Inspect coverage
+- Create revision set
+
+### Status
+
+**PROPOSED**
+
+### Relevance
+
+**Medium-high**, but not cycle-1.
+
+---
+
+# 8. Hide/show node categories directly from the graph
+
+You have relationship filters, but there is another dimension:
+
+### Node-type filtering.
+
+For example:
+
+```text
+Show:
+
+☑ SpecificationPoints
+☑ Concepts
+☐ Questions
+☐ Resources
+☐ Misconceptions
+☐ Learner evidence
+```
+
+OpenHuman's memory graph is an entity graph, so filtering entity categories is a natural graph interaction pattern. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/obsidian-wiki/memory-tree.md?utm_source=chatgpt.com))
+
+For SyllabAI this could become extremely useful once the graph contains:
+
+- SpecificationPoints
+- Concepts
+- Skills
+- Misconceptions
+- Questions
+- Resources
+- MarkPoints
+
+### Status
+
+**PROPOSED**
+
+---
+
+# 9. “Connected only” mode
+
+Another graph-native interaction that isn't the same as relationship filtering:
+
+> **Hide every node that isn't connected to the current selection.**
+
+For example:
+
+```text
+Full curriculum
+        ↓
+Select "Electrolysis"
+        ↓
+Connected-only
+        ↓
+
+Electrolysis
+   ├─ ions
+   ├─ electrodes
+   ├─ redox
+   ├─ half equations
+   ├─ electrolysis questions
+   └─ misconceptions
+```
+
+This creates a very clean investigation mode.
+
+### Status
+
+**PROPOSED**
+
+---
+
+# 10. Path tracing
+
+You have Learning Path, but a different graph interaction remains valuable:
+
+> **Find/show the relationship path between A and B.**
+
+Example:
+
+```text
+Atomic structure
+       ↓
+Electronic configuration
+       ↓
+Periodic table
+       ↓
+Bonding
+       ↓
+Properties of materials
+```
+
+The user could select:
+
+**From:** Atomic structure  
+**To:** Properties of materials
+
+Then:
+
+**Show educational path**
+
+The graph highlights the connecting route.
+
+This is different from your adaptive Learning Path because it answers a **structural graph question**, not a recommendation question.
+
+### Status
+
+**PROPOSED**
+
+### Relevance
+
+**Very high.**
+
+---
+
+# 11. Reverse dependency exploration
+
+This deserves its own interaction.
+
+On a SpecificationPoint:
+
+> **“What depends on this?”**
+
+For example:
+
+```text
+[Balancing equations]
+
+Used by:
+   ↓
+[Moles]
+   ↓
+[Concentration calculations]
+   ↓
+[Titration]
+   ↓
+[Exam questions]
+```
+
+This gives learners and teachers a “why does this matter?” interaction.
+
+### Status
+
+**PROPOSED**
+
+---
+
+# 12. Graph minimap
+
+This is a pure visual/navigation feature.
+
+Something like:
+
+```text
+┌────────────────────────────┐
+│                            │
+│          GRAPH             │
+│                            │
+│                     ┌────┐ │
+│                     │ ▪▪ │ │
+│                     │ ▪  │ │
+│                     └────┘ │
+└────────────────────────────┘
+```
+
+The minimap shows:
+
+- whole curriculum
+- current viewport
+- current node
+- learning-path region
+
+This becomes increasingly useful as the graph gets larger.
+
+### Status
+
+**PROPOSED**
+
+### Relevance
+
+**Medium.**
+
+I wouldn't build it yet unless graph scale starts causing navigation problems.
+
+---
+
+# 13. Semantic zoom
+
+This is a particularly interesting one for SyllabAI.
+
+Instead of merely making everything smaller/larger:
+
+### Zoom level changes semantic detail.
+
+At zoomed out:
+
+```text
+Chemistry
+ ├── Principles
+ ├── Inorganic
+ ├── Physical
+ └── Organic
+```
+
+Zoom in:
+
+```text
+Physical Chemistry
+ ├── States of matter
+ ├── Atomic structure
+ ├── Rates
+ ├── Energetics
+ ...
+```
+
+Zoom further:
+
+```text
+Rates of reaction
+ ├── collision theory
+ ├── temperature
+ ├── concentration
+ ├── catalysts
+ ...
+```
+
+Zoom further:
+
+```text
+SpecificationPoint 1.34
+"Explain..."
+```
+
+This is **far more appropriate for SyllabAI than simply showing 217 nodes simultaneously**.
+
+### Status
+
+**PROPOSED**
+
+### Relevance
+
+**Very high.**
+
+This could become one of the strongest graph UX features.
+
+---
+
+# 14. Temporal graph / learner-history mode
+
+This is not currently part of your graph.
+
+But visually:
+
+```text
+Curriculum state
+
+Sept ───────────────→ Today
+
+○ ○ ○ ● ○
+    ↓
+mastery evidence
+```
+
+The user could scrub through learner state:
+
+**Before intervention → After practice → After reassessment**
+
+The curriculum graph stays fixed; the **learner overlay changes through time**.
+
+That respects your architecture:
+
+> curriculum truth remains stable  
+> learner state is an overlay.
+
+This is therefore especially compatible with SyllabAI.
+
+### Status
+
+**PROPOSED**
+
+### Relevance
+
+**Very high eventually.**
+
+---
+
+# 15. “Why is this connected?” interaction
+
+You have relationship inspection, which is excellent.
+
+But the next step is an explicit **relationship explanation**.
+
+Click:
+
+```text
+A ───── prerequisite ─────→ B
+```
+
+Panel:
+
+```text
+WHY THESE ARE CONNECTED
+
+Relationship
+Prerequisite
+
+Authority
+INFERRED PROTOTYPE
+
+Direction
+A → B
+
+Reason
+A provides knowledge required to understand B.
+
+Evidence
+...
+```
+
+Your v59/v60 provenance work already provides much of the architecture for this.
+
+The missing part is making the **visual relationship itself explainable**.
+
+### Status
+
+**Partially implemented → expandable.**
+
+---
+
+# 16. Edge hover highlighting
+
+Another small but worthwhile interaction:
+
+Hover:
+
+```text
+A ───────────────→ B
+```
+
+Then:
+
+```text
+A
+│
+│ highlighted
+▼
+B
+```
+
+and unrelated edges fade.
+
+This should also work on touch through selection.
+
+### Status
+
+**Probably partially present through relationship selection, but not a full hover/highlight interaction.**
+
+### Relevance
+
+Medium.
+
+---
+
+# 17. Relationship direction visualization
+
+For prerequisite relationships, direction matters.
+
+Instead of merely:
+
+```text
+A ───────── B
+```
+
+make it visually unmistakable:
+
+```text
+A ───────────────▶ B
+```
+
+Then distinguish:
+
+```text
+A ─────────▶ B    prerequisite
+A ──────────── B  related
+A ──────────◆ B   assessment mapping
+```
+
+Your current provenance classification is already doing the semantic work.
+
+The missing opportunity is making that semantic distinction **visually native to the graph** rather than primarily panel-based.
+
+### Status
+
+**Partially implemented.**
+
+---
+
+# 18. “Peek” without changing selection
+
+This is a subtle but very useful interaction.
+
+Hover/tap:
+
+```text
+SpecificationPoint
+```
+
+show a lightweight preview:
+
+```text
+States of matter
+
+Mastery      Not measured
+Questions    14
+Resources    3
+Relations    5
+
+[Open]
+```
+
+But **do not change current selection/focus**.
+
+That distinction matters because your current architecture deliberately separates:
+
+- selected
+- focused
+- keyboard node
+- panel node
+
+A peek interaction would add:
+
+```text
+peekNodeId
+```
+
+without contaminating those states.
+
+### Status
+
+**PROPOSED**
+
+---
+
+# 19. Context menu / radial graph actions
+
+You already have contextual actions in the relationship inspector.
+
+The next graph-native step is a node context menu:
+
+```text
+                  Tutor
+                    ↑
+             ┌────────────┐
+       Path ←│  ELECTROLYSIS │→ Practice
+             └────────────┘
+               ↓
+             Explore
+```
+
+Or conventional menu:
+
+```text
+Explore
+Practice
+Tutor
+Show prerequisites
+Show dependents
+Show assessments
+Show resources
+Focus
+Add to learning path
+```
+
+This would make the graph much more directly actionable.
+
+### Status
+
+**Partially implemented**, because many actions already exist in panels.
+
+---
+
+# 20. Graph history / back-forward navigation
+
+This is one I think is genuinely missing.
+
+Imagine:
+
+```text
+Rates
+ ↓
+Collision theory
+ ↓
+Temperature
+ ↓
+Catalyst
+ ↓
+Activation energy
+```
+
+The user should be able to:
+
+**Back**
+
+and return to the previous graph context.
+
+Not browser navigation.
+
+A graph exploration history:
+
+```text
+Graph history
+
+1. Rates
+2. Collision theory
+3. Temperature
+4. Catalyst ← current
+```
+
+This becomes especially useful after:
+
+- relationship traversal
+- search
+- path exploration
+- connected-only mode
+
+### Status
+
+**PROPOSED**
+
+---
+
+# 21. Breadcrumb history vs curriculum breadcrumb
+
+You already have curriculum breadcrumbs.
+
+I would add a separate:
+
+### Exploration breadcrumb
+
+```text
+Curriculum
+  › Rates
+  › Prerequisites
+  › Collision theory
+  › Related
+  › Activation energy
+```
+
+That tells the user:
+
+> “How did I get here?”
+
+rather than:
+
+> “Where is this node in the curriculum?”
+
+Those are different concepts.
+
+This fits extremely well with your current architecture.
+
+### Status
+
+**PROPOSED**
+
+---
+
+# 22. Pin / bookmark graph nodes
+
+A user should be able to pin important nodes spatially.
+
+For example:
+
+```text
+📌 Rates
+📌 Equilibrium
+📌 Organic reactions
+```
+
+Then:
+
+**Show pinned**
+
+or
+
+**Return to pinned node**
+
+For teachers, this could mean:
+
+> “My current teaching focus.”
+
+For learners:
+
+> “Topics I'm working on.”
+
+Crucially, this should be **UI state**, not learner mastery.
+
+### Status
+
+**PROPOSED**
+
+---
+
+# 23. Saved graph views
+
+This is a natural extension of filters/projections.
+
+Example:
+
+### Saved view: “Organic revision”
+
+```text
+Node types:
+  SpecificationPoint
+  Concept
+  Question
+
+Relationships:
+  Structure
+  Prerequisite
+  Assessment
+
+Focus:
+  Organic Chemistry
+```
+
+Another:
+
+### “Class 10B intervention”
+
+```text
+Learner overlay
+Low mastery
+Review due
+Current unit
+```
+
+This turns the graph into a reusable analytical workspace.
+
+### Status
+
+**PROPOSED**
+
+### Relevance
+
+**High for Teacher Lens.**
+
+---
+
+# 24. Compare mode
+
+Another major missing interaction.
+
+Select two nodes:
+
+```text
+Atomic structure     vs     Bonding
+```
+
+Then:
+
+```text
+COMMON
+• ...
+
+PREREQUISITES
+• ...
+
+ASSESSMENT
+• ...
+
+LEARNER STATE
+• ...
+
+RESOURCES
+• ...
+```
+
+Or Teacher Lens:
+
+```text
+Concept A
+Class mastery: ...
+
+Concept B
+Class mastery: ...
+```
+
+This is not something OpenHuman necessarily needs because its graph is personal memory.
+
+But **SyllabAI absolutely can exploit the graph better here because its nodes have educational semantics.**
+
+### Status
+
+**PROPOSED**
+
+---
+
+# 25. Graph ↔ learning-action continuity
+
+You already have this partially.
+
+The stronger interaction would be:
+
+```text
+Graph
+  ↓
+select node
+  ↓
+Practice
+  ↓
+practice surface
+  ↓
+Back to graph
+  ↓
+same node
+  ↓
+learner evidence changes
+  ↓
+graph overlay updates
+```
+
+So the graph isn't merely navigation.
+
+It becomes the **persistent spatial representation of the learning loop**.
+
+This is arguably more important than adding more graph decorations.
+
+### Status
+
+**Partially implemented.**
+
+---
+
+# 26. The biggest missing OpenHuman-inspired interaction set
+
+If I reduce all of this to the **actual graph interaction backlog**, I'd classify it like this:
+
+| Feature | Status | SyllabAI relevance |
+|---|---|---|
+| Local neighborhood expansion | Missing | **Very high** |
+| Connected-only mode | Missing | **Very high** |
+| Expand relationships from node | Missing | **Very high** |
+| Semantic zoom | Missing | **Very high** |
+| Path tracing A → B | Missing | **High** |
+| Reverse dependency exploration | Missing | **High** |
+| Multi-node selection | Missing | **High** |
+| Lasso selection | Missing | Medium-high |
+| Node-type visibility filters | Missing | **High** |
+| Edge hover/highlight | Partial | Medium |
+| Directional edge emphasis | Partial | High |
+| Relationship explanation | Partial | **Very high** |
+| Node peek | Missing | Medium-high |
+| Node context menu | Partial | High |
+| Exploration history | Missing | **High** |
+| Exploration breadcrumbs | Missing | High |
+| Pin/bookmark nodes | Missing | Medium |
+| Saved graph views | Missing | **High for Teacher** |
+| Compare nodes | Missing | **High** |
+| Minimap | Missing | Medium |
+| Temporal learner-state graph | Missing | **Very high eventually** |
+| Graph → practice → graph continuity | Partial | **Very high** |
+| Animated fly-to / camera navigation | Partial | Medium-high |
+
+---
+
+# What I would *not* chase
+
+I would **not** try to reproduce OpenHuman's graph literally.
+
+OpenHuman's graph is primarily an **entity relationship visualization** derived from its Memory Tree/entity index. Its documentation describes the graph as a force-directed visualization of entities and their relationships. ([GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/obsidian-wiki/memory-tree.md?utm_source=chatgpt.com))
+
+SyllabAI's graph has a much stronger semantic structure:
+
+```text
+Curriculum truth
+      │
+      ├── hierarchy
+      ├── SpecificationPoints
+      ├── concepts
+      ├── skills
+      ├── prerequisites
+      ├── assessments
+      ├── resources
+      └── misconceptions
+             │
+             ▼
+       learner overlay
+             │
+             ▼
+       learning action
+```
+
+So the correct borrowing is **interaction grammar**, not OpenHuman's data model.
+
+---
+
+# My recommended next graph phase
+
+I would stop adding small visual polish and build one coherent interaction concept:
+
+## **Graph Exploration Mode**
+
+```text
+                    GRAPH EXPLORATION
+
+                  ┌─────────────────┐
+                  │  Specification  │
+                  │      Point      │
+                  └────────┬────────┘
+                           │
+             ┌─────────────┼──────────────┐
+             ▼             ▼              ▼
+        Prerequisites   Related      Assessments
+             │             │              │
+             └─────────────┼──────────────┘
+                           ▼
+                    Local network
+                           │
+                  ┌────────┴────────┐
+                  ▼                 ▼
+             Explore path      Focus network
+                  │                 │
+                  ▼                 ▼
+             Learning action    Evidence overlay
+```
+
+With these **six core interactions**:
+
+1. **Expand neighborhood**
+2. **Connected-only**
+3. **Path trace**
+4. **Semantic zoom**
+5. **Explore history/back**
+6. **Graph → learning action → graph**
+
+Then add:
+
+7. Multi-select  
+8. Node-type filters  
+9. Compare  
+10. Saved Teacher views
+
+That would make the graph feel substantially more like a **true interactive knowledge-navigation environment**, rather than a polished curriculum diagram.
+
+And importantly, it builds directly on the architecture you've already established in v57-v72 instead of introducing another graph model.
+
+---
+
+**Sources:**
+
+- [openhuman/gitbooks/features/obsidian-wiki/memory-tree.md at main · tinyhumansai/openhuman · GitHub](https://github.com/tinyhumansai/openhuman/blob/main/gitbooks/features/obsidian-wiki/memory-tree.md?utm_source=chatgpt.com)
 
 
 
