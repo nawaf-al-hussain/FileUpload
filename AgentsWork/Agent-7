@@ -1,0 +1,43 @@
+Drain cycle 指令收到。我 lane 状态：无在手 claim（T-MIG-021 已 yield 关闭）、无在外 PR → 走 **1（同步）→ 4（零碰撞扫描后认领一项）→ 6（门禁）→ 7（停 + 状态回执）**。先同步——fetch + worklog 尾部 + 分支/PR 普查：
+主分支（Main）又前进了（`ffc2876 → daad88e`），新的申领已出现：`t-mig-023/r1`、`t-mig-031/r3a`（PR #34）、`t-mig-035/w0a`。正在读取 `worklog` 尾部和新的任务卡，确认队列项占用情况：
+最后一条记录是 R0-SWEEP-3：T-MIG-030 tranche-1 已合并（r7a，tranche-2 归 r7a——与指令一致），**030..034 的 id 映射已被 R0 批注**。但出现了两个无主卡分支 `t-mig-023/r1` 和 `t-mig-035/w0a`——必须查明它们是否已占用队列项：
+碰撞扫描结果明确：
+- **W2-F1 + W2-F2 已被 r1 认领**（`t-mig-023/r1` @ 08:14:41Z，IN_PROGRESS）
+- **T-MIG-030 tranche-2** = r7a（指令明示）；035/w0a = T-MIG-011 的 live-flow 余项；031/r3a = wave-3 read port
+- **队列剩余可认领：W2-F3 或 T-MIG-002-R**
+
+我选 **W2-F3（versions[] multiset 语义 re-pin）**：最 crisp、R0 已给裁定（frozen `findByPaperId` 无 ORDER BY、set-compare 6/6 同 multiset）、直接解锁 W2 exit gate 的最后一个独立条件、且无人认领。先读 F-3 的精确材料再推 claim（claim-first 教训）：
+F-3 机制清楚了：runner 目前只有 `tolerate`（字段名删除）比较，**没有 multiset 模式**；R0 裁定该 case 因“钉住了未指定的 DB heap 顺序”而 STABILITY-EXEMPT。读 case JSON 结构 + 诊断细节 + comparator doctrine，然后推 claim：
+材料齐全。设计定型：runner 增加声明式 `unordered`（路径列表 → 该路径数组按 redact 后的 canonical JSON 排序后比较，即 multiset 语义），case JSON 声明 `unordered: ["versions"]`，selftest 补 multiset 钉子，附 reorder-check 工具（循 setcheck 先例）。**Claim-first**——先推认领再实现。取 023 卡为格式模板：
+模板到手（r1 的卡 + claim 条目格式）。bun 1.3.14 可用。**立即推认领**（earliest-claim-wins 附着于 push 时刻）：
+认领已推送（`a24c970`）。现在实现——先完整读 runner.ts：
+Runner 全貌清楚。设计落地前最后三查：README 比较器章节、root package.json 门禁脚本、case 文件尾部结构：
+材料齐备。实施——runner 四处编辑 + case 重钉 + README 文档 + 取证工具：
+Runner 编辑完成。现在 case 重钉 + README 文档 + 取证工具：
+Case 已重钉（6 元素），README 已落档。写取证工具：
+全部门禁（指令 #6 原文命令）+ 取证工具：
+沙箱重置后 node_modules 缺失——先 `bun install` 再复跑：
+typecheck ×4 绿。测试 361 过/1 挂——操作员说 main 是 362/0/13，这 1 个 fail 可能就是 worklog 里登记的“flaky unit test (identity uncaptured)”，也可能与我有关。定位：
+失败点是 identity 的 rate-limit budget 测试（2.8 秒时长、时间敏感）——与 worklog 登记的"flaky unit test on main (identity uncaptured)"特征吻合，且我的 diff 不碰 apps/。验证这两点：
+复跑两次 exit=0（该文件全绿）→ 确认是已知 flake，非我的回归（我的 diff 只含 bookkeeping 三文件，实现改动尚未提交且全在 golden/）。取证据行 + 跑 golden 门禁：
+全绿。查一下 CI 是否有其他 runner 调用点（import.meta.main 护栏不能破坏现有调用），然后提交实现：
+CI 直接调用 `--selftest`，护栏无影响。提交实现 + IN_REVIEW + push：
+打开 PR（标题包含任务 ID）:
+补 head/base 重建 PR：
+PR **#37** 已开。按指令第 5 步——还有余力则评审一个**他人**的 open PR。现存 open PR：#34（r3a 的 T-MIG-031 claim）。查看其内容判断可评审性：
+#34 是 claim-only PR（237 行，纯 bookkeeping）——可以完整严格评审，且与我的 #37 围栏零交集（golden/** vs apps/api 路由层），无 COI。读卡片全文 + 核对 golden 案例清单与围栏分离度：
+卡片上半部严谨（案例清单 11/11 对得上、deps 全 DONE、id 与 R0 批复的 030..034 映射一致）。读 scope 段落收尾核查：
+#34 核查全部通过。发布独立评审（结论 APPROVE，合并权仍在 R0），随后落盘第 7 步状态回执：
+第 7 步——按指令格式落一行状态回执并推送：
+**Drain cycle complete — lane R4-api-b.**
+
+| Step | Result |
+|---|---|
+| 1 Sync | main @ `daad88e` (directive's `2ca1a16` already stale); nothing held, no open PR |
+| 4 Claim | **W2-F3** claimed as **T-MIG-024** (zero-collision scan: W2-F1/F-2 = r1's `t-mig-023`, 030/031/035 all taken) — claim pushed first |
+| 6 Gates | typecheck ×4 exit 0 · bun test 361/1/13 (the 1 = the **register's known flaky identity budget test**, re-ran file ×2 green, zero apps/packages files in my diff) · golden selftest OK · real-case reorder-check 7 PASS |
+| → PR | **[#37](https://github.com/SyllabAI/syllabai-v2/pull/37)**: declared-unordered multiset comparator + `unordered:["versions"]` re-pin + 7 selftest pins + `reorder-check` tool · receipt run-002 · yaml IN_REVIEW · R0 actions: id ratification + comparator verdict |
+| 5 Review | independent **APPROVE** posted on PR #34 (T-MIG-031 claim): 11/11 case inventory, ratified id map, deps DONE, fence disjoint |
+| 7 Stop | one-line status receipt on the worklog — **IDLE** |
+
+Suggestion recorded: de-flake the identity budget test; R0 to re-check W2 exit once F-1/F-2/F-3 land.
