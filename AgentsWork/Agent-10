@@ -1,0 +1,24 @@
+Environment is ready (bun 1.3.14, node 24, git 2.47.3) and there's an existing clone. Syncing it to current main now.
+Main synced — and it's already moved past the operator's snapshot: HEAD is now `ffc2876` (R0 housekeeping: T-MIG-022 → DONE via PR #30, F-1/F-2 filed against T-MIG-020, F-3 ruled stability-exempt pending re-pin). Now doing the mandatory SYNC-FIRST read of worklog tail + task board.
+Worklog synced. Board state confirmed: Wave-2 exit gate is **CONDITIONAL on F-1 (Instant micros rendering) + F-2 (page-text assembly) fixes + F-3 re-pin**; PR #30 merged; T-MIG-030 in flight with R7a; T-MIG-002 repair still standing. Now running the zero-collision scan (open PRs, remote branches, yaml claims) before claiming.
+The remote-branch scan worked but the API rejected the PAT from the previous message (`Bad credentials`) — yet `git fetch` succeeded, so git must be using a different (working) credential. Let me check what my lane did previously (local worklog) and what credential git holds — without ever printing the token.
+Now the full picture: **my lane (r3-fix) already holds a claim — T-MIG-024** (self-filed), which is exactly the W2-F1 + W2-F2 fix pair from the operator's queue. The branch `t-mig-024/r3` is push-ready with green gates, but push was blocked by PAT death mid-session. Per drain-cycle step 2, I must **finish this claim to PR** (not claim anything new). Verifying the branch state and collision-freedom now:
+Claim yaml verified — proper fence, zero overlap with R7a's W3 work. Now checking R7a's branch scope for collision and reading my gate receipt to reproduce the exact gate commands:
+R7a's fence (`T-MIG-030-attempt-history-port`) is fully disjoint from my content-read files — zero collisions confirmed. My branch's receipts are complete. Now: test the PAT (dead or alive?), try anonymous PR check, then re-run all gates fresh on the branch.
+PAT confirmed dead (401 — matches the mid-session death recorded last session; fleet-leak auto-revocation) and anonymous API is rate-limited, so API-side PR verification is unavailable — but operator-attested "zero open PRs" + unchanged `origin/main` + no `t-mig-024/*` or `W2-*` remote branches give a solid collision-free posture. Proceeding to fresh gate re-runs on the claim branch:
+Gates 1–2 green, but the counts (329/874 expect) differ from my recorded receipt (348/910 expect) — need a like-for-like baseline before signing anything. Measuring main in the same sandbox:
+Delta is **exact**: main `328/0/13 (867 expect)` vs branch `329/0/13 (874 expect)` — precisely **+1 test, +7 expect()**, matching my receipt's pin (zero test loss; absolute counts are sandbox-variant, delta is the invariant). Running gate 3 + secret scan on the branch:
+All 3 gates green, diff is credential-clean. Now finalizing: stamp the fresh re-gate into the yaml `execution_record`, append the one-line status receipt to the worklog (append-only), and commit on the claim branch.
+Yaml stamped. Now appending the one-line status receipt to the worklog (append-only, at tail):
+Push attempt documented as the BLOCKED evidence (401 — token definitively revoked). Branch is push-ready verbatim at `44bb907` on unmoved main `ffc2876`. Updating my local session worklog and closing out the drain cycle:
+**DRAIN CYCLE COMPLETE — r3-fix lane report, then STOP.**
+
+1. **Synced**: main @ `ffc2876` (R0-SWEEP-2 — already past your `2ca1a16` snapshot); worklog tail + yamls re-read before touching anything.
+2. **Holding a claim — YES**: **T-MIG-024** = your queue's **W2-F1 + W2-F2**, already implemented per the T-MIG-022 fix sketch. Held it (documented, not silent); re-verified all gates **fresh green**: typecheck x4 exit 0 · bun test `329/0/13skip` = main `328/0/13` **+1 test/+7 expect() like-for-like** (zero loss) · golden selftest OK · credential-scan clean.
+3. **No open PRs** to drive or review (API check unavailable — see blocker; operator-attested zero + main unmoved + no `t-mig-024/W2-*` remote refs). R7a's T-MIG-030 fence verified disjoint.
+4. **BLOCKED**: push/PR impossible — your PAT is dead (401 `Invalid username or token`, re-verified live; auto-revoked after chat-transit ×3). No credential improvised. Branch **push-ready verbatim @ `44bb907`** on unmoved main — one fresh PAT unblocks PR → independent review → R0 intake. Pass-B replay separately NEON-blocked.
+5. Status receipt appended to repo worklog (commit `44bb907`); no new wave work self-filed.
+
+**Status line**: `r3-fix | held T-MIG-024 (W2-F1+F-2), fresh gates green, push-ready @ 44bb907 | BLOCKED (needs fresh GITHUB_PAT) | suggestion: file nothing new against W2-F1/F-2 — route a fresh PAT here to open the PR; with R6's F-3 re-pin the Wave-2 exit gate fully unblocks.`
+
+**Stopped.** Next: paste one fresh PAT and I'll push + open the PR immediately.
